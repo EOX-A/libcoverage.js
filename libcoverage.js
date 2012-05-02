@@ -379,3 +379,38 @@ WCS.Core.parseExceptionReport = function($node) {
     }
     else return ret;
 };
+
+WCS.Core.parseCoverageDescriptions = function($node) {
+    var func = WCS.Core.parseFunctions["CoverageDescription"];
+    return $node.filter("wcs|CoverageDescription").map(function() {
+        return func($(this));
+    });
+};
+
+WCS.Core.parseCoverageDescription = function($node) {
+    /* 
+     * parse TODO:
+     *
+     * coverageId
+     * type
+     * dimensions
+     * bounds[]
+     * origin[]
+     * size[]
+     * resolution[]
+     * rangeType[]:
+         * name
+         * description
+         * nilValues[]:
+             * value
+             * reason
+         * uom
+         * allowedValues[]
+         * significantFigures
+     * coverageSubtype
+     * supportedCRSs[]
+     * nativeCRS
+     * supportedFormats
+     * nativeFormat?
+     */
+};
