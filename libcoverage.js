@@ -247,3 +247,16 @@ WCS.Core.getCoverageURL = function(url, coverageid, format, options, extraParams
     return url + (url.charAt(url.length-1) !== "?" ? "?" : "")
             + params.join("&") + ((extra.length > 0) ? "&" + extra : "");
 };
+
+/**
+ *  function WCS.Core.parse
+ *
+ * Parses a (EO-)WCS response to JavaScript objects. Requires jQuery or a
+ * similar library which has to implement namespace aware queries. (Library
+ * independence not yet implemented).
+ */
+
+
+WCS.Core.parse = function(xml) {
+    
+};
