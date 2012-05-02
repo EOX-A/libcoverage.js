@@ -1,9 +1,21 @@
 
-/*
- *  @requires jQuery
+/**
+ *  function namespace
+ *
+ * Convenience function to create namespaces.
+ * Taken from: http://blogger.ziesemer.com/2008/05/javascript-namespace-function.html
  */
 
-namespace("WCS.Core"); // TODO: implement namespacing function
+var namespace = function(name, separator, container){
+    var ns = name.split(separator || '.'),
+        o = container || window, i, len;
+    for(i = 0, len = ns.length; i < len; i++) {
+        o = o[ns[i]] = o[ns[i]] || {};
+    }
+    return o;
+};
+
+namespace("WCS.Core");
 namespace("WCS.Util");
 
 /**
@@ -248,14 +260,23 @@ WCS.Core.getCoverageURL = function(url, coverageid, format, options, extraParams
             + params.join("&") + ((extra.length > 0) ? "&" + extra : "");
 };
 
+
+WCS.Core.parseFunctions = {
+    
+};
+
 /**
  *  function WCS.Core.parse
  *
  * Parses a (EO-)WCS response to JavaScript objects. Requires jQuery or a
  * similar library which has to implement namespace aware queries. (Library
  * independence not yet implemented).
+ *
+ * @param xml: the XML string returned by the service.
+ *
+ * @returns: depending on the response a JavaScript object with all parsed data
+ *           or a collection thereof.
  */
-
 
 WCS.Core.parse = function(xml) {
     
