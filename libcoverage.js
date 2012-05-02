@@ -260,10 +260,37 @@ WCS.Core.getCoverageURL = function(url, coverageid, format, options, extraParams
             + params.join("&") + ((extra.length > 0) ? "&" + extra : "");
 };
 
+/**
+ *  object WCS.Core.parseFunctions
+ *
+ * A hash-table associating the node name of common WCS objects with their
+ * according parse function. All parse functions shall have take a jQuery
+ * object wrapping the current node as their only parameter.
+ */
 
 WCS.Core.parseFunctions = {
-    
+    "Capabilities": WCS.Core.parseCapabilities,
+    "ExceptionReport": WCS.Core.parseExceptionReport,
+    "CoverageDescriptions": WCS.Core.parseCoverageDescriptions,
+    "CoverageDescription": WCS.Core.parseCoverageDescription,
+    "EOCoverageSetDescription": WCS.Core.parseEOCoverageSetDescription,
+    "DatasetSeriesDescription": WCS.Core.parseDatasetSeriesDescription,
+    "RectifiedGridCoverage": WCS.Core.parseCoverageDescription,
 };
+
+/**
+ *  object WCS.Core.options
+ *
+ * A hash-table with global options for this library. Used options with their
+ * respective defaults are:
+ *
+ *  -throwOnException (false): whether or not aJavaScript exception shall be
+ *                             thrown when an ows:ExceptionReport is parsed.
+ */
+
+WCS.Core.options = {
+    throwOnException: false
+}
 
 /**
  *  function WCS.Core.parse
@@ -272,12 +299,83 @@ WCS.Core.parseFunctions = {
  * similar library which has to implement namespace aware queries. (Library
  * independence not yet implemented).
  *
- * @param xml: the XML string returned by the service.
+ * @param xml: the XML string returned by the service
  *
  * @returns: depending on the response a JavaScript object with all parsed data
  *           or a collection thereof.
  */
 
 WCS.Core.parse = function(xml) {
+    $.xmlns["ows"] = "http://www.opengis.net/ows/2.0";
+    $.xmlns["wcs"] = "http://www.opengis.net/wcs/2.0";
+    $.xmlns["gml"] = "http://www.opengis.net/gml/3.2";
+    $.xmlns["gmlcov"] = "http://www.opengis.net/gmlcov/1.0";
+    $.xmlns["swe"] = "http://www.opengis.net/swe/2.0";
     
+    $root = $.parseXML(xml);
+
+    $root.children().each(function() {
+        // TODO get tag name of element and call according parsing method
+        
+    });
+};
+
+WCS.Core.parseCapabilities = function($node) {
+    /*
+     * parse TODO:
+     *
+     * serviceIdentification
+         * title
+         * abstract
+         * keywords[]
+         * serviceType
+         * serviceTypeVersion
+         * profiles[]
+         * fees[]
+         * accessConstraints[]
+     * serviceProvider:
+         * providerName
+         * providerSite
+         * serviceContact:
+         * individualName
+         * positionName
+         * contactInfo:
+             * phone:
+                 * voice
+                 * facsimile
+             * address:
+                 * deliveryPoint
+                 * city
+                 * administrativeArea
+                 * postalCode
+                 * country
+                 * electronicMailAddress
+             * onlineAddress
+             * hoursOfService
+             * contactInstructions
+         * role
+     * operations[]:
+         * name
+         * getUrl
+         * postUrl
+     * serviceMetadata?
+     * contents:
+         * coverageSummaries[]:
+             * coverageId
+             * coverageSubtype
+     */
+};
+
+
+WCS.Core.parseExceptionReport = function($node) {
+    var $exception = $node.find("ows|Exception");
+    var parsed = {
+        code: $exception.attr("exceptionCode");
+        locator: $exception.attr("locator");
+        text: $exception.find("ows|ExceptionText").text();
+    };
+    if (WCS.Core.options.throwOnException) {
+        throw new Exception(parsed.text);
+    }
+    else return ret;
 };
