@@ -1,4 +1,3 @@
-
 /**
  *  function namespace
  *
@@ -267,8 +266,26 @@ WCS.Core.getCoverageURL = function(url, coverageid, format, options, extraParams
  * according parse function. All parse functions shall have take a jQuery
  * object wrapping the current node as their only parameter.
  */
+// TODO: internal (private) variable would be more suiteable
+WCS.Core.parseFunctions = {};
 
-WCS.Core.parseFunctions = {
+WCS.Core.pushParseFunction = function(tagName, parseFunction) {
+    if (WCS.Core.parseFunctions.hasOwnProperty(tagName)) {
+        WCS.Core.parseFunctions[tagName].push(parseFunction);
+    }
+    else {
+        WCS.Core.parseFunctions[tagName] = [parseFunction];
+    }
+};
+
+WCS.Core.pushParseFunctions = function(obj) {
+    for (var key in obj) {
+        WCS.Core.addParseFunction(key, obj[key]);
+    }
+};
+
+/* Push core parsing functions */
+WCS.Core.pushParseFunctions({
     "Capabilities": WCS.Core.parseCapabilities,
     "ExceptionReport": WCS.Core.parseExceptionReport,
     "CoverageDescriptions": WCS.Core.parseCoverageDescriptions,
@@ -276,6 +293,18 @@ WCS.Core.parseFunctions = {
     "EOCoverageSetDescription": WCS.Core.parseEOCoverageSetDescription,
     "DatasetSeriesDescription": WCS.Core.parseDatasetSeriesDescription,
     "RectifiedGridCoverage": WCS.Core.parseCoverageDescription,
+});
+
+WCS.Core.callParseFunctions = function(tagName, $node) {
+    if (WCS.Core.parseFunctions.hasOwnProperty(tagName)) {
+        var funcs = WCS.Core.parseFunctions[tagName],
+            result = {};
+        for (var i = 0; i < funcs.length; ++i) {
+            $.extend(result, funcs[i]($node));
+        }
+        return result;
+    }
+    else return;
 };
 
 /**
@@ -316,56 +345,55 @@ WCS.Core.parse = function(xml) {
 
     $root.children().each(function() {
         // TODO get tag name of element and call according parsing method
-        
+        var name = this.tagName;
     });
 };
 
 WCS.Core.parseCapabilities = function($node) {
-    /*
-     * parse TODO:
-     *
-     * serviceIdentification
-         * title
-         * abstract
-         * keywords[]
-         * serviceType
-         * serviceTypeVersion
-         * profiles[]
-         * fees[]
-         * accessConstraints[]
-     * serviceProvider:
-         * providerName
-         * providerSite
-         * serviceContact:
-         * individualName
-         * positionName
-         * contactInfo:
-             * phone:
-                 * voice
-                 * facsimile
-             * address:
-                 * deliveryPoint
-                 * city
-                 * administrativeArea
-                 * postalCode
-                 * country
-                 * electronicMailAddress
-             * onlineAddress
-             * hoursOfService
-             * contactInstructions
-         * role
-     * operations[]:
-         * name
-         * getUrl
-         * postUrl
-     * serviceMetadata?
-     * contents:
-         * coverageSummaries[]:
-             * coverageId
-             * coverageSubtype
-     */
+    //
+     //* parse TODO:
+     //*
+     //* serviceIdentification
+         //* title
+         //* abstract
+         //* keywords[]
+         //* serviceType
+         //* serviceTypeVersion
+         //* profiles[]
+         //* fees[]
+         //* accessConstraints[]
+     //* serviceProvider:
+         //* providerName
+         //* providerSite
+         //* serviceContact:
+         //* individualName
+         //* positionName
+         //* contactInfo:
+             //* phone:
+                 //* voice
+                 //* facsimile
+             //* address:
+                 //* deliveryPoint
+                 //* city
+                 //* administrativeArea
+                 //* postalCode
+                 //* country
+                 //* electronicMailAddress
+             //* onlineAddress
+             //* hoursOfService
+             //* contactInstructions
+         //* role
+     //* operations[]:
+         //* name
+         //* getUrl
+         //* postUrl
+     //* serviceMetadata?
+     //* contents:
+         //* coverageSummaries[]:
+             //* coverageId
+             //* coverageSubtype
+     //
 };
-
 
 WCS.Core.parseExceptionReport = function($node) {
     var $exception = $node.find("ows|Exception");
@@ -382,35 +410,73 @@ WCS.Core.parseExceptionReport = function($node) {
 
 WCS.Core.parseCoverageDescriptions = function($node) {
     var func = WCS.Core.parseFunctions["CoverageDescription"];
-    return $node.filter("wcs|CoverageDescription").map(function() {
+    var descs = $.makeArray($node.filter("wcs|CoverageDescription").map(function() {
         return func($(this));
-    });
+    }));
+
+    return {coverageDescriptions: descs};
 };
 
 WCS.Core.parseCoverageDescription = function($node) {
-    /* 
-     * parse TODO:
-     *
-     * coverageId
-     * type
-     * dimensions
-     * bounds[]
-     * origin[]
-     * size[]
-     * resolution[]
-     * rangeType[]:
-         * name
-         * description
-         * nilValues[]:
-             * value
-             * reason
-         * uom
-         * allowedValues[]
-         * significantFigures
-     * coverageSubtype
-     * supportedCRSs[]
-     * nativeCRS
-     * supportedFormats
-     * nativeFormat?
-     */
+    var stringToIntList = function(string, separator) {
+        separator = separator || " ";
+        return $.map(string.split(separator), function(val) {
+            return parseInt(val);
+        });
+    }
+
+    var stringToFloatList = function(string, separator) {
+        separator = separator || " ";
+        return $.map(string.split(separator), function(val) {
+            return parseFloat(val);
+        });
+    }
+    
+    var $envelope = $node.find("gml|Envelope");
+    var bounds = {
+        projection: $envelope.attr("srsName")
+        values: stringToIntList($envelope.find("gml|lowerCorner").text()).concat(
+                stringToIntList($envelope.find("gml|upperCorner").text()))
+    }
+
+    var $domainSet = $node.find("gml|domainSet");
+    // TODO: improve this: also take gml|low into account
+    var size = $.map(stringToIntList($domainSet.find("gml|high").text()), function(val) {
+        return val + 1;
+    });
+
+    // TODO: implement
+    //var resolution = $.map(stringToFloatList()
+
+    var rangeType = $.makeArray($node.find("swe|field").map(function() {
+        var $field = $(this);
+        return {
+            name: $field.attr("name"),
+            description: $field.find("swe|description").text(),
+            uom: $field.find("swe|uom").attr("code"),
+            nilValues: $.makeArray($field.find("swe|nilValue").map(function(){
+                var $nilValue = $(this);
+                return {
+                    value: parseInt($nilValue.text()),
+                    reason: $nilValue.attr("reason")
+                }
+            })),
+            allowedValues: stringToIntList($field.find("swe|interval").text()),
+            significantFigures: parseInt($field.find("swe|interval").text())
+        };
+    }));
+    
+    var obj {
+        coverageId: $node.find("wcs|CoverageId").text(),
+        dimensions: parseInt($node.find("gml|RectifiedGrid").attr("dimension")),
+        bounds: bounds,
+        size: size,
+        resolution: [], // TODO: parse offset vectors
+        origin: stringToFloatList($domainSet.find("gml|pos").text()),
+        rangeType: rangeType,
+        coverageSubtype: $node.find("wcs|CoverageSubtype").text(),
+        supportedCRSs: $.makeArray($node.find("wcs|supportedCRS").map(function() { return $(this).text(); })),
+        nativeCRS: $node.find("wcs|nativeCRS").text(),
+        supportedFormats: $.makeArray($node.find("wcs|supportedFormat").map(function() { return $(this).text(); }))
+    }
 };
