@@ -338,7 +338,7 @@ WCS.Core.parseExceptionReport = function($node) {
 
 WCS.Core.parseCoverageDescriptions = function($node) {
     var func = WCS.Core.parseFunctions["CoverageDescription"];
-    var descs = $.makeArray($node.filter("wcs|CoverageDescription").map(function() {
+    var descs = $.makeArray($node.find("wcs|CoverageDescription").map(function() {
         return func($(this));
     }));
 

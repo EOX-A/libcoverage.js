@@ -74,13 +74,43 @@ WCS.EO.describeEOCoverageSetURL = function(url, eoid, options, extraParams) {
 /* push EO-WCS related parse functions */
 WCS.Core.pushParseFunctions({
     "EOCoverageSetDescription": WCS.EO.parseEOCoverageSetDescription,
+    "DatasetSeriesDescriptions": WCS.EO.parseDatasetSeriesDescriptions,
     "DatasetSeriesDescription": WCS.EO.parseDatasetSeriesDescription,
+    "CoverageDescription": WCS.EO.parseExtendedCoverageDescription
 });
 
 WCS.EO.parseEOCoverageSetDescription = function($node) {
-    
+    //TODO: move this somewhere central:
+    $.xmlns["eop"] = "http://www.opengis.net/eop/2.0";
+    $.xmlns["wcseo"] = "http://www.opengis.net/wcseo/1.0";
+    $.xmlns["om"] = "http://www.opengis.net/om/2.0";
+    var cdescs = WCS.Core.parseFunctions["CoverageDescriptions"](
+        $node.find("wcs|CoverageDescriptions")
+    );
+
+    var dssdescs = WCS.Core.parseFunctions["DatasetSeriesDescriptions"](
+        $node.find("wcseo|DatasetSeriesDescriptions")
+    );
+
+    return {
+        coverageDescriptions: cdescs.coverageDescriptions,
+        datasetSeriesDescriptions: dssdescs.datasetSeriesDescriptions
+    };
+};
+
+WCS.EO.parseDatasetSeriesDescriptions = function($node) {
+    var func = WCS.Core.parseFunctions["DatasetSeriesDescription"];
+    var descs = $.makeArray($node.find("wcseo|DatasetSeriesDescription").map(function() {
+        return func($(this));
+    }));
+
+    return {datasetSeriesDescriptions: descs};
 };
 
 WCS.EO.parseDatasetSeriesDescription = function($node) {
+    
+};
+
+WCS.EO.parseExtendedCoverageDescription = function($node) {
     
 };
