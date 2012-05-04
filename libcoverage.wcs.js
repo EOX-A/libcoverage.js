@@ -2,7 +2,8 @@
  *  function namespace
  *
  * Convenience function to create namespaces.
- * Taken from: http://blogger.ziesemer.com/2008/05/javascript-namespace-function.html
+ * Taken from:
+ *      http://blogger.ziesemer.com/2008/05/javascript-namespace-function.html
  */
 
 var namespace = function(name, separator, container){
@@ -199,6 +200,21 @@ WCS.Core.getCoverageURL = function(url, coverageid, format, options, extraParams
 // TODO: internal (private) variable would be more suiteable
 WCS.Core.parseFunctions = {};
 
+/**
+ *  function WCS.Core.pushParseFunction
+ *
+ * Registers a new node parsing function for a specified tagName. A function
+ * can be registered to multiple tagNames.
+ *
+ * @param tagName: the tagName the function is registered to
+ *
+ * @param parseFunction: the function to be executed. The function shall
+ *                       receive the tag name and a (jQuery) wrapped DOM object
+ *                       as parameters and shall return an object of all parsed
+ *                       attributes. For extension parsing functions only
+ *                       extensive properties shall be parsed.
+ */
+
 WCS.Core.pushParseFunction = function(tagName, parseFunction) {
     if (WCS.Core.parseFunctions.hasOwnProperty(tagName)) {
         WCS.Core.parseFunctions[tagName].push(parseFunction);
@@ -208,20 +224,34 @@ WCS.Core.pushParseFunction = function(tagName, parseFunction) {
     }
 };
 
+/**
+ *  function WCS.Core.pushParseFunctions
+ *
+ * Convenience function to push multiple parsing functions at one. The same
+ * rules as with `WCS.Core.pushParseFunction` apply here.
+ *
+ * @params: a hash-table with key-value pairs, where the key is the tag name
+ *          and the value the parsing function.
+ */
+
 WCS.Core.pushParseFunctions = function(obj) {
     for (var key in obj) {
         WCS.Core.addParseFunction(key, obj[key]);
     }
 };
 
-/* Push core parsing functions */
-WCS.Core.pushParseFunctions({
-    "Capabilities": WCS.Core.parseCapabilities,
-    "ExceptionReport": WCS.Core.parseExceptionReport,
-    "CoverageDescriptions": WCS.Core.parseCoverageDescriptions,
-    "CoverageDescription": WCS.Core.parseCoverageDescription,
-    "RectifiedGridCoverage": WCS.Core.parseCoverageDescription,
-});
+/**
+ *  function WCS.Core.callParseFunctions
+ * 
+ * Calls all registered functions for a specified node name. A merged object
+ * with all results of each function is returned.
+ *
+ * @param tagName: the tagName of the node to be parsed
+ *
+ * @param $node: the (jQuery) wrapped DOM object
+ *
+ * @return: the merged object of all parsing results
+ */
 
 WCS.Core.callParseFunctions = function(tagName, $node) {
     if (WCS.Core.parseFunctions.hasOwnProperty(tagName)) {
@@ -232,7 +262,8 @@ WCS.Core.callParseFunctions = function(tagName, $node) {
         }
         return result;
     }
-    else return;
+    else
+        throw new Error("No parsing function for tag name '" + tagName + "' registered.");
 };
 
 /**
@@ -241,7 +272,7 @@ WCS.Core.callParseFunctions = function(tagName, $node) {
  * A hash-table with global options for this library. Used options with their
  * respective defaults are:
  *
- *  -throwOnException (false): whether or not aJavaScript exception shall be
+ *  -throwOnException (false): whether or not a JavaScript exception shall be
  *                             thrown when an ows:ExceptionReport is parsed.
  */
 
@@ -276,6 +307,16 @@ WCS.Core.parse = function(xml) {
         var name = this.tagName;
     });
 };
+
+/**
+ *  function WCS.Core.parseCapabilities
+ *
+ * Parsing function for wcs:Capabilities elements.
+ *
+ * @param $node: the (jQuery) wrapped DOM object
+ *
+ * @returns: the parsed object
+ */
 
 WCS.Core.parseCapabilities = function($node) {
     //
@@ -323,6 +364,16 @@ WCS.Core.parseCapabilities = function($node) {
      //
 };
 
+/**
+ *  function WCS.Core.parseExceptionReport
+ *
+ * Parsing function for ows:ExceptionReport elements.
+ *
+ * @param $node: the (jQuery) wrapped DOM object
+ *
+ * @returns: the parsed object
+ */
+
 WCS.Core.parseExceptionReport = function($node) {
     var $exception = $node.find("ows|Exception");
     var parsed = {
@@ -336,6 +387,16 @@ WCS.Core.parseExceptionReport = function($node) {
     else return ret;
 };
 
+/**
+ *  function WCS.Core.parseCoverageDescriptions
+ *
+ * Parsing function for wcs:CoverageDescriptions elements.
+ *
+ * @param $node: the (jQuery) wrapped DOM object
+ *
+ * @returns: the parsed object
+ */
+
 WCS.Core.parseCoverageDescriptions = function($node) {
     var func = WCS.Core.parseFunctions["CoverageDescription"];
     var descs = $.makeArray($node.find("wcs|CoverageDescription").map(function() {
@@ -344,6 +405,16 @@ WCS.Core.parseCoverageDescriptions = function($node) {
 
     return {coverageDescriptions: descs};
 };
+
+/**
+ *  function WCS.Core.parseCoverageDescription
+ *
+ * Parsing function for wcs:CoverageDescription elements.
+ *
+ * @param $node: the (jQuery) wrapped DOM object
+ *
+ * @returns: the parsed object
+ */
 
 WCS.Core.parseCoverageDescription = function($node) {
     var stringToIntList = function(string, separator) {
@@ -408,3 +479,13 @@ WCS.Core.parseCoverageDescription = function($node) {
         supportedFormats: $.makeArray($node.find("wcs|supportedFormat").map(function() { return $(this).text(); }))
     }
 };
+
+/* Push core parsing functions */
+WCS.Core.pushParseFunctions({
+    "Capabilities": WCS.Core.parseCapabilities,
+    "ExceptionReport": WCS.Core.parseExceptionReport,
+    "CoverageDescriptions": WCS.Core.parseCoverageDescriptions,
+    "CoverageDescription": WCS.Core.parseCoverageDescription,
+    "RectifiedGridCoverage": WCS.Core.parseCoverageDescription,
+});
+
