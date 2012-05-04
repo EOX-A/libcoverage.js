@@ -241,6 +241,28 @@ WCS.Core.pushParseFunctions = function(obj) {
 };
 
 /**
+ *  function WCS.Util.deepMerge
+ *
+ * Recursivly merges two hash-tables.
+ *
+ * @param target: the object the other one will be merged into
+ *
+ * @param other: the object that will be merged into the target
+ */
+
+var WCS.Util.deepMerge = function(target, other) {
+    if (typeof target != "object" || typeof other != "object") return;
+    for (var key in other) {
+        if (target.hasOwnProperty(key)
+            && typeof target[key] == "object"
+            && typeof other[key] == "object") {
+            WCS.Util.deepMerge(target[key], other[key]);
+        }
+        else target[key] = other[key];
+    }
+};
+
+/**
  *  function WCS.Core.callParseFunctions
  * 
  * Calls all registered functions for a specified node name. A merged object
@@ -256,11 +278,12 @@ WCS.Core.pushParseFunctions = function(obj) {
 WCS.Core.callParseFunctions = function(tagName, $node) {
     if (WCS.Core.parseFunctions.hasOwnProperty(tagName)) {
         var funcs = WCS.Core.parseFunctions[tagName],
-            result = {};
+            endResult = {};
         for (var i = 0; i < funcs.length; ++i) {
-            $.extend(result, funcs[i]($node));
+            var result = funcs[i]($node);
+            WCS.Util.deepMerge(endResult, result);
         }
-        return result;
+        return endResult;
     }
     else
         throw new Error("No parsing function for tag name '" + tagName + "' registered.");
@@ -319,49 +342,60 @@ WCS.Core.parse = function(xml) {
  */
 
 WCS.Core.parseCapabilities = function($node) {
-    //
-     //* parse TODO:
-     //*
-     //* serviceIdentification
-         //* title
-         //* abstract
-         //* keywords[]
-         //* serviceType
-         //* serviceTypeVersion
-         //* profiles[]
-         //* fees[]
-         //* accessConstraints[]
-     //* serviceProvider:
-         //* providerName
-         //* providerSite
-         //* serviceContact:
-         //* individualName
-         //* positionName
-         //* contactInfo:
-             //* phone:
-                 //* voice
-                 //* facsimile
-             //* address:
-                 //* deliveryPoint
-                 //* city
-                 //* administrativeArea
-                 //* postalCode
-                 //* country
-                 //* electronicMailAddress
-             //* onlineAddress
-             //* hoursOfService
-             //* contactInstructions
-         //* role
-     //* operations[]:
-         //* name
-         //* getUrl
-         //* postUrl
-     //* serviceMetadata?
-     //* contents:
-         //* coverageSummaries[]:
-             //* coverageId
-             //* coverageSubtype
-     //
+    $id = $node.find("ows|ServiceIdentification");
+    $prov = $node.find("ows|ServiceProvider");
+    
+    return {
+        serviceIdentification: {
+            title: $id.find("ows|Title").text(),
+            abstract: $id.find("ows|Abstract").text(),
+            keywords: $.makeArray($id.find("ows|Keyword").map(function() {
+                return $(this).text();
+            })),
+            serviceType: $id.find("ows|ServiceType").text(),
+            serviceTypeVersion: $id.find("ows|ServiceTypeVersion").text(),
+            profiles: $.makeArray($id.find("ows|Profile").map(function() {
+                return $(this).text();
+            })),
+            fees: $id.find("ows|Fees").text(),
+            accessConstraints: $id.find("ows|AccessConstraints").text()
+        },
+        serviceProvider: {
+            providerName: $prov.find("ows|ProviderName").text(),
+            providerSite: $prov.find("ows|ProviderSite").text(),
+            individualName: $prov.find("ows|IndividualName").text(),
+            positionName: $prov.find("ows|PositionName").text(),
+            contactInfo: {
+                phone: {
+                    voice: $prov.find("ows|Phone ows|Voice").text(),
+                    facsimile: $prov.find("ows|Phone ows|Facsimile").text()
+                },
+                address: {
+                    deliveryPoint: $prov.find("ows|Address ows|DeliveryPoint").text(),
+                    city: $prov.find("ows|Address ows|City").text(),
+                    administrativeArea: $prov.find("ows|Address ows|AdministrativeArea").text(),ativeArea
+                    postalCode: $prov.find("ows|Address ows|PostalCode").text(),
+                    country: $prov.find("ows|Address ows|Country").text(),
+                    electronicMailAddress: $prov.find("ows|Address ows|ElectronicMailAddress").text(),
+                },
+                onlineResource: $prov.find("ows|OnlineResource").attr("xlink|href"),
+                hoursOfService: $prov.find("ows|HoursOfService").text(),
+                contactInstructions:$prov.find("ows|ContactInstructions").text()
+            },
+            role: $prov.find("ows|Role").text()
+        },
+        operations: $.makeArray($node.find("ows|OperationsMetadata ows|Operation").map(function() {
+            $op = $(this);
+            return {
+                name: $op.attr("name"),
+                postUrl: $op.find("ows|Get").attr("xlink|href"),
+                getUrl: $op.find("ows|Post").attr("xlink|href")
+            };
+        })),
+        contents: $.makeArray($node.find("wcs|Contents ows|CoverageSummary").map(function() {
+            // TODO make coverage summary an own parsing object
+        }))
+    };
 };
 
 /**
