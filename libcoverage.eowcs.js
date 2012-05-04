@@ -112,5 +112,18 @@ WCS.EO.parseDatasetSeriesDescription = function($node) {
 };
 
 WCS.EO.parseExtendedCoverageDescription = function($node) {
-    
+    $eoMetadata = $node.find("wcseo|EOMetadata");
+    if ($eoMetadata.size() == 1) {
+        $phenomenonTime = $eoMetadata.find("om|phenomenonTime");
+        return {
+            footprint: $.map($eoMetadata.find("om|featureOfInterest gml|posList").text().split(" "), function(val) {
+                return parseFloat(val);
+            });
+            timePeriod: [
+                new Date($phenomenonTime.find("gml|beginPosition").text()),
+                new Date($phenomenonTime.find("gml|endPosition").text())
+            ]
+        };
+    }
+    else return {};
 };
