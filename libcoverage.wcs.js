@@ -310,25 +310,15 @@ WCS.Core.options = {
  * similar library which has to implement namespace aware queries. (Library
  * independence not yet implemented).
  *
- * @param xml: the XML string returned by the service
+ * @param xml: the XML string to be parsed
  *
  * @returns: depending on the response a JavaScript object with all parsed data
  *           or a collection thereof.
  */
 
 WCS.Core.parse = function(xml) {
-    $.xmlns["ows"] = "http://www.opengis.net/ows/2.0";
-    $.xmlns["wcs"] = "http://www.opengis.net/wcs/2.0";
-    $.xmlns["gml"] = "http://www.opengis.net/gml/3.2";
-    $.xmlns["gmlcov"] = "http://www.opengis.net/gmlcov/1.0";
-    $.xmlns["swe"] = "http://www.opengis.net/swe/2.0";
-    
-    $root = $.parseXML(xml);
-
-    $root.children().each(function() {
-        // TODO get tag name of element and call according parsing method
-        var name = this.tagName;
-    });
+    var $root = $.parseXML(xml);
+    return WCS.Core.callParseFunctions($root[0].tagName, $root);
 };
 
 /**
@@ -513,6 +503,13 @@ WCS.Core.parseCoverageDescription = function($node) {
         supportedFormats: $.makeArray($node.find("wcs|supportedFormat").map(function() { return $(this).text(); }))
     }
 };
+
+/* setup global namespace declarations */
+$.xmlns["ows"] = "http://www.opengis.net/ows/2.0";
+$.xmlns["wcs"] = "http://www.opengis.net/wcs/2.0";
+$.xmlns["gml"] = "http://www.opengis.net/gml/3.2";
+$.xmlns["gmlcov"] = "http://www.opengis.net/gmlcov/1.0";
+$.xmlns["swe"] = "http://www.opengis.net/swe/2.0";
 
 /* Push core parsing functions */
 WCS.Core.pushParseFunctions({
