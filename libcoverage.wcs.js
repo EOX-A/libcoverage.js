@@ -332,8 +332,8 @@ WCS.Core.parse = function(xml) {
  */
 
 WCS.Core.parseCapabilities = function($node) {
-    $id = $node.find("ows|ServiceIdentification");
-    $prov = $node.find("ows|ServiceProvider");
+    var $id = $node.find("ows|ServiceIdentification");
+    var $prov = $node.find("ows|ServiceProvider");
     
     return {
         serviceIdentification: {
@@ -375,16 +375,22 @@ WCS.Core.parseCapabilities = function($node) {
             role: $prov.find("ows|Role").text()
         },
         operations: $.makeArray($node.find("ows|OperationsMetadata ows|Operation").map(function() {
-            $op = $(this);
+            var $op = $(this);
             return {
                 name: $op.attr("name"),
                 postUrl: $op.find("ows|Get").attr("xlink|href"),
                 getUrl: $op.find("ows|Post").attr("xlink|href")
             };
         })),
-        contents: $.makeArray($node.find("wcs|Contents ows|CoverageSummary").map(function() {
-            // TODO make coverage summary an own parsing object
-        }))
+        contents: {
+            coverages: $.makeArray($node.find("wcs|Contents ows|CoverageSummary").map(function() {
+                var $sum = $(this);
+                return {
+                    coverageId: $sum.find("wcs|CoverageId").text(),
+                    coverageSubtype: $sum.find("wcs|CoverageSubtype").text()
+                };
+            }))
+        }
     };
 };
 
