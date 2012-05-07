@@ -356,7 +356,7 @@ WCS.Core.parseCapabilities = function($node) {
         },
         serviceProvider: {
             providerName: $prov.find("ows|ProviderName").text(),
-            providerSite: $prov.find("ows|ProviderSite").text(),
+            providerSite: $prov.find("ows|ProviderSite").attr("xlink:href"),
             individualName: $prov.find("ows|IndividualName").text(),
             positionName: $prov.find("ows|PositionName").text(),
             contactInfo: {
