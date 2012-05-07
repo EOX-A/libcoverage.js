@@ -96,7 +96,7 @@ WCS.Core.describeCoverageURL = function(url, coverageids, extraParams) {
     options = options || {};
     extraParams = extraParams || {};
     var ids = ((coverageids instanceof Array)
-               ? coverageids.join(",") : coverageids;
+               ? coverageids.join(",") : coverageids);
     
     var extra = WCS.Util.objectToKVP(extraParams);
     return url + (url.charAt(url.length-1) !== "?" ? "?" : "")
@@ -147,7 +147,7 @@ WCS.Core.getCoverageURL = function(url, coverageid, format, options, extraParams
     subsetCRS = options.subsetCRS || "http://www.opengis.net/def/crs/EPSG/0/4326";
     if (url.charAt(url.length-1) !== "?")
         url += "?";
-    var params ["service=wcs", "version=2.0.0", "request=getcoverage",
+    var params = ["service=wcs", "version=2.0.0", "request=getcoverage",
                 "coverageid=" + coverageid, "format=" + format];
 
     if (options.bbox && !options.subsetX && !options.subsetY) {
@@ -236,7 +236,7 @@ WCS.Core.pushParseFunction = function(tagName, parseFunction) {
 
 WCS.Core.pushParseFunctions = function(obj) {
     for (var key in obj) {
-        WCS.Core.addParseFunction(key, obj[key]);
+        WCS.Core.pushParseFunction(key, obj[key]);
     }
 };
 
@@ -250,7 +250,7 @@ WCS.Core.pushParseFunctions = function(obj) {
  * @param other: the object that will be merged into the target
  */
 
-var WCS.Util.deepMerge = function(target, other) {
+WCS.Util.deepMerge = function(target, other) {
     if (typeof target != "object" || typeof other != "object") return;
     for (var key in other) {
         if (target.hasOwnProperty(key)
@@ -363,7 +363,7 @@ WCS.Core.parseCapabilities = function($node) {
                 address: {
                     deliveryPoint: $prov.find("ows|Address ows|DeliveryPoint").text(),
                     city: $prov.find("ows|Address ows|City").text(),
-                    administrativeArea: $prov.find("ows|Address ows|AdministrativeArea").text(),ativeArea
+                    administrativeArea: $prov.find("ows|Address ows|AdministrativeArea").text(),
                     postalCode: $prov.find("ows|Address ows|PostalCode").text(),
                     country: $prov.find("ows|Address ows|Country").text(),
                     electronicMailAddress: $prov.find("ows|Address ows|ElectronicMailAddress").text(),
@@ -407,9 +407,9 @@ WCS.Core.parseCapabilities = function($node) {
 WCS.Core.parseExceptionReport = function($node) {
     var $exception = $node.find("ows|Exception");
     var parsed = {
-        code: $exception.attr("exceptionCode");
-        locator: $exception.attr("locator");
-        text: $exception.find("ows|ExceptionText").text();
+        code: $exception.attr("exceptionCode"),
+        locator: $exception.attr("locator"),
+        text: $exception.find("ows|ExceptionText").text()
     };
     if (WCS.Core.options.throwOnException) {
         throw new Exception(parsed.text);
@@ -463,7 +463,7 @@ WCS.Core.parseCoverageDescription = function($node) {
     
     var $envelope = $node.find("gml|Envelope");
     var bounds = {
-        projection: $envelope.attr("srsName")
+        projection: $envelope.attr("srsName"),
         values: stringToIntList($envelope.find("gml|lowerCorner").text()).concat(
                 stringToIntList($envelope.find("gml|upperCorner").text()))
     }
@@ -495,7 +495,7 @@ WCS.Core.parseCoverageDescription = function($node) {
         };
     }));
     
-    var obj {
+    var obj = {
         coverageId: $node.find("wcs|CoverageId").text(),
         dimensions: parseInt($node.find("gml|RectifiedGrid").attr("dimension")),
         bounds: bounds,

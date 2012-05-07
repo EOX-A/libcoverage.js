@@ -50,7 +50,7 @@ WCS.EO.describeEOCoverageSetURL = function(url, eoid, options, extraParams) {
         params.push('subset=x,' + subsetCRS + '(' + options.subsetX[0] + ',' + options.subsetX[1] + ')');
     }
     if (options.subsetY) {
-        params.push('subset=y,' + subsetCRS + '(' + options.subsetY[0] + ',' + options.subsetY[1] + ')';
+        params.push('subset=y,' + subsetCRS + '(' + options.subsetY[0] + ',' + options.subsetY[1] + ')');
     }
     
     if (options.subsetTime) {
@@ -118,7 +118,7 @@ WCS.EO.parseExtendedCoverageDescription = function($node) {
         return {
             footprint: $.map($eoMetadata.find("om|featureOfInterest gml|posList").text().split(" "), function(val) {
                 return parseFloat(val);
-            });
+            }),
             timePeriod: [
                 new Date($phenomenonTime.find("gml|beginPosition").text()),
                 new Date($phenomenonTime.find("gml|endPosition").text())
