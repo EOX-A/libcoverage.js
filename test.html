@@ -12,51 +12,55 @@
 
 var baseUrl = "http://www.example.com/";
 
+// namespace shortcuts
+var wcsk = WCS.Core.KVP;
+var wcsp = WCS.Core.Parse;
+
 module("WCS KVP");
 
 test("GetCapabilities simple", function() {
-    var url = WCS.Core.getCapabilitiesURL(baseUrl);
+    var url = wcsk.getCapabilitiesURL(baseUrl);
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcapabilities");
 });
 
 test("GetCapabilities sections", function() {
-    var url = WCS.Core.getCapabilitiesURL(baseUrl, {
+    var url = wcsk.getCapabilitiesURL(baseUrl, {
         sections: ["ServiceIdentification", "ServiceProvider"]
     });
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcapabilities&sections=ServiceIdentification,ServiceProvider");
 });
 
 test("GetCapabilities updatesequence", function() {
-    var url = WCS.Core.getCapabilitiesURL(baseUrl, {
+    var url = wcsk.getCapabilitiesURL(baseUrl, {
         updatesequence: ["someupdatesequence"]
     });
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcapabilities&updatesequence=someupdatesequence");
 });
 
 test("DescribeCoverage single", function() {
-    var url = WCS.Core.describeCoverageURL(baseUrl, "id1");
+    var url = wcsk.describeCoverageURL(baseUrl, "id1");
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=describecoverage&coverageid=id1");
 });
 
 test("DescribeCoverage multiple", function() {
-    var url = WCS.Core.describeCoverageURL(baseUrl, ["id1", "id2", "id3"]);
+    var url = wcsk.describeCoverageURL(baseUrl, ["id1", "id2", "id3"]);
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=describecoverage&coverageid=id1,id2,id3");
 });
 
 test("GetCoverage simple", function() {
-    var url = WCS.Core.getCoverageURL(baseUrl, "id1", "image/tiff");
+    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff");
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&format=image/tiff");
 });
 
 test("GetCoverage bbox", function() {
-    var url = WCS.Core.getCoverageURL(baseUrl, "id1", "image/tiff", {
+    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff", {
         bbox: [1, 2, 3, 4]
     });
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&format=image/tiff&subset=x,http://www.opengis.net/def/crs/EPSG/0/4326(1,3)&subset=y,http://www.opengis.net/def/crs/EPSG/0/4326(2,4)");
 });
 
 test("GetCoverage subsetX", function() {
-    var url = WCS.Core.getCoverageURL(baseUrl, "id1", "image/tiff", {
+    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff", {
         subsetX: [1, 3],
         subsetCRS: "http://www.opengis.net/def/crs/EPSG/0/3857"
     });
@@ -64,7 +68,7 @@ test("GetCoverage subsetX", function() {
 });
 
 test("GetCoverage size", function() {
-    var url = WCS.Core.getCoverageURL(baseUrl, "id1", "image/tiff", {
+    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff", {
         size: [100, 100]
     });
     equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&format=image/tiff&size=x(100)&size=y(100)");
@@ -74,9 +78,8 @@ test("GetCoverage size", function() {
 
 module("WCS parsing")
 
-
 test("Capabilities", function() {
-    var obj = WCS.Core.parse($("#capabilities").text());
+    var obj = wcsp.parse($("#capabilities").text());
     deepEqual(obj, {
         serviceIdentification: {
             title: "Test",
@@ -157,6 +160,81 @@ test("Capabilities", function() {
             }]
         }
     });    
+});
+
+test("CoverageDescriptions", function() {
+    var obj = wcsp.parse($("#coverageDescriptions").text());
+    deepEqual(obj, {
+        coverageDescriptions: [{
+            coverageId: "CoverageID1",
+            coverageSubtype: "RectifiedDataset",
+            dimensions: 2,
+            bounds: {
+                projection: "http://www.opengis.net/def/crs/EPSG/0/4326",
+                values: [32.26692700, 8.77892600, 46.21538200, 25.09349500]
+            },
+            size: [539, 448],
+            resolution: [],
+            origin: [46.24910355, 8.48775578],
+            rangeType: [{
+                name: "Band1_uint16",
+                description: "first band",
+                uom: "W.m-2.sr-1.nm-1",
+                nilValues: [{
+                    value: 0,
+                    reason: "http://www.opengis.net/def/nil/OGC/0/unknown"
+                }],
+                allowedValues: [0, 65535],
+                significantFigures: 5
+            }, {
+                name: "Band2_uint16",
+                description: "second band",
+                uom: "W.m-2.sr-1.nm-1",
+                nilValues: [{
+                    value: 0,
+                    reason: "http://www.opengis.net/def/nil/OGC/0/unknown"
+                }],
+                allowedValues: [0, 65535],
+                significantFigures: 5
+            }, {
+                name: "Band3_uint16",
+                description: "third band",
+                uom: "W.m-2.sr-1.nm-1",
+                nilValues: [{
+                    value: 0,
+                    reason: "http://www.opengis.net/def/nil/OGC/0/unknown"
+                }],
+                allowedValues: [0, 65535],
+                significantFigures: 5
+            }],
+            supportedCRSs: [],
+            nativeCRS: "",
+            supportedFormats: []
+        }]
+    });
+    // TODO: not yet complete. e.g: resolution...
+});
+
+test("ExceptionReport", function() {
+    // save old config option
+    var originalOption = wcsp.options.throwOnException;
+
+    wcsp.options.throwOnException = false;
+    
+    var obj = wcsp.parse($("#exceptionReport").text());
+    deepEqual(obj, {
+        code: "InvalidParameterValue",
+        locator: "request",
+        text: "Invalid parameter 'Foo'."
+    });
+
+    wcsp.options.throwOnException = true;
+    raises(function() {
+        wcsp.parse($("#exceptionReport").text());
+    }, "Invalid parameter 'Foo'.");
+
+    // reset option
+    wcsp.options.throwOnException = originalOption;
 });
 
     });
@@ -305,13 +383,108 @@ test("Capabilities", function() {
 </wcs:Capabilities>
 </script>
 
+<script type="text/xml" id="coverageDescriptions">
+<wcs:CoverageDescriptions xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
+  <wcs:CoverageDescription gml:id="CoverageID1">
+    <gml:boundedBy>
+      <gml:Envelope axisLabels="lat long" srsDimension="2" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" uomLabels="deg deg">
+        <gml:lowerCorner>32.26692700 8.77892600</gml:lowerCorner>
+        <gml:upperCorner>46.21538200 25.09349500</gml:upperCorner>
+      </gml:Envelope>
+    </gml:boundedBy>
+    <wcs:CoverageId>CoverageID1</wcs:CoverageId>
+    <gml:domainSet>
+      <gml:RectifiedGrid dimension="2" gml:id="CoverageID1_grid">
+        <gml:limits>
+          <gml:GridEnvelope>
+            <gml:low>0 0</gml:low>
+            <gml:high>538 447</gml:high>
+          </gml:GridEnvelope>
+        </gml:limits>
+        <gml:axisLabels>lat long</gml:axisLabels>
+        <gml:origin>
+          <gml:Point gml:id="CoverageID1_grid_origin" srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+            <gml:pos>46.24910355 8.48775578</gml:pos>
+          </gml:Point>
+        </gml:origin>
+        <gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/4326">0.0 0.03139097</gml:offsetVector>
+        <gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/4326">-0.03137006 0.0</gml:offsetVector>
+      </gml:RectifiedGrid>
+    </gml:domainSet>
+    <gmlcov:rangeType>
+      <swe:DataRecord>
+        <swe:field name="Band1_uint16">
+          <swe:Quantity definition="http://www.opengis.net/def/property/OGC/0/Radiance">
+            <swe:description>first band</swe:description>
+            <swe:nilValues>
+              <swe:NilValues>
+                <swe:nilValue reason="http://www.opengis.net/def/nil/OGC/0/unknown">0</swe:nilValue>
+              </swe:NilValues>
+            </swe:nilValues>
+            <swe:uom code="W.m-2.sr-1.nm-1" />
+            <swe:constraint>
+              <swe:AllowedValues>
+                <swe:interval>0 65535</swe:interval>
+                <swe:significantFigures>5</swe:significantFigures>
+              </swe:AllowedValues>
+            </swe:constraint>
+          </swe:Quantity>
+        </swe:field>
+        <swe:field name="Band2_uint16">
+          <swe:Quantity definition="http://www.opengis.net/def/property/OGC/0/Radiance">
+            <swe:description>second band</swe:description>
+            <swe:nilValues>
+              <swe:NilValues>
+                <swe:nilValue reason="http://www.opengis.net/def/nil/OGC/0/unknown">0</swe:nilValue>
+              </swe:NilValues>
+            </swe:nilValues>
+            <swe:uom code="W.m-2.sr-1.nm-1" />
+            <swe:constraint>
+              <swe:AllowedValues>
+                <swe:interval>0 65535</swe:interval>
+                <swe:significantFigures>5</swe:significantFigures>
+              </swe:AllowedValues>
+            </swe:constraint>
+          </swe:Quantity>
+        </swe:field>
+        <swe:field name="Band3_uint16">
+          <swe:Quantity definition="http://www.opengis.net/def/property/OGC/0/Radiance">
+            <swe:description>third band</swe:description>
+            <swe:nilValues>
+              <swe:NilValues>
+                <swe:nilValue reason="http://www.opengis.net/def/nil/OGC/0/unknown">0</swe:nilValue>
+              </swe:NilValues>
+            </swe:nilValues>
+            <swe:uom code="W.m-2.sr-1.nm-1" />
+            <swe:constraint>
+              <swe:AllowedValues>
+                <swe:interval>0 65535</swe:interval>
+                <swe:significantFigures>5</swe:significantFigures>
+              </swe:AllowedValues>
+            </swe:constraint>
+          </swe:Quantity>
+        </swe:field>
+      </swe:DataRecord>
+    </gmlcov:rangeType>
+    <wcs:ServiceParameters>
+      <wcs:CoverageSubtype>RectifiedDataset</wcs:CoverageSubtype>
+    </wcs:ServiceParameters>
+  </wcs:CoverageDescription>
+</wcs:CoverageDescriptions>
+</script>
+<script type="text/xml" id="exceptionReport">
+<ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.0" xml:lang="en-US" xsi:schemaLocation="http://www.opengis.net/ows/2.0 http://schemas.opengis.net/ows/2.0/owsExceptionReport.xsd">
+  <ows:Exception exceptionCode="InvalidParameterValue" locator="request">
+    <ows:ExceptionText>Invalid parameter 'Foo'.</ows:ExceptionText>
+  </ows:Exception>
+</ows:ExceptionReport>
+</script>
 </head>
 <body>
-    <h1 id="qunit-header">QUnit example</h1>
+    <h1 id="qunit-header">libcoverage.js test suite</h1>
     <h2 id="qunit-banner"></h2>
     <div id="qunit-testrunner-toolbar"></div>
     <h2 id="qunit-userAgent"></h2>
     <ol id="qunit-tests"></ol>
-    <div id="qunit-fixture">test markup, will be hidden</div>
 </body>
 </html>
