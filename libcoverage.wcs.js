@@ -37,6 +37,44 @@ WCS.Util.objectToKVP = function(obj) {
 };
 
 /**
+ *  function WCS.Util.stringToIntArray
+ *
+ * Utility function to split a string and parse an array of integers.
+ *
+ * @param string: the string to split and parse
+ * @param separator: an (optional) separator, the string shall be split with.
+ *                   Defaults to " ".
+ *
+ * @returns: an array of the parsed values
+ */
+
+WCS.Util.stringToIntArray = function(string, separator) {
+    separator = separator || " ";
+    return $.map(string.split(separator), function(val) {
+        return parseInt(val);
+    });
+};
+
+/**
+ *  function WCS.Util.stringToFloatArray
+ *
+ * Utility function to split a string and parse an array of floats.
+ *
+ * @param string: the string to split and parse
+ * @param separator: an (optional) separator, the string shall be split with.
+ *                   Defaults to " ".
+ *
+ * @returns: an array of the parsed values
+ */
+
+WCS.Util.stringToFloatArray = function(string, separator) {
+    separator = separator || " ";
+    return $.map(string.split(separator), function(val) {
+        return parseFloat(val);
+    });
+};
+
+/**
  *  function WCS.Core.getCapabilitiesURL
  *
  * Returns a 'GetCapabilities' request URL with parameters encoded as KVP.
@@ -434,9 +472,8 @@ WCS.Core.parseExceptionReport = function($node) {
 WCS.Core.parseCoverageDescriptions = function($node) {
     var func = WCS.Core.parseFunctions["CoverageDescription"];
     var descs = $.makeArray($node.find("wcs|CoverageDescription").map(function() {
-        return func($(this));
+        return WCS.Core.callParseFunctions(this.localName, $(this));
     }));
-
     return {coverageDescriptions: descs};
 };
 
@@ -451,35 +488,21 @@ WCS.Core.parseCoverageDescriptions = function($node) {
  */
 
 WCS.Core.parseCoverageDescription = function($node) {
-    var stringToIntList = function(string, separator) {
-        separator = separator || " ";
-        return $.map(string.split(separator), function(val) {
-            return parseInt(val);
-        });
-    }
-
-    var stringToFloatList = function(string, separator) {
-        separator = separator || " ";
-        return $.map(string.split(separator), function(val) {
-            return parseFloat(val);
-        });
-    }
-    
     var $envelope = $node.find("gml|Envelope");
     var bounds = {
         projection: $envelope.attr("srsName"),
-        values: stringToIntList($envelope.find("gml|lowerCorner").text()).concat(
-                stringToIntList($envelope.find("gml|upperCorner").text()))
-    }
+        values: WCS.Util.stringToFloatArray($envelope.find("gml|lowerCorner").text()).concat(
+                WCS.Util.stringToFloatArray($envelope.find("gml|upperCorner").text()))
+    };
 
     var $domainSet = $node.find("gml|domainSet");
     // TODO: improve this: also take gml|low into account
-    var size = $.map(stringToIntList($domainSet.find("gml|high").text()), function(val) {
+    var size = $.map(WCS.Util.stringToIntArray($domainSet.find("gml|high").text()), function(val) {
         return val + 1;
     });
 
     // TODO: implement
-    //var resolution = $.map(stringToFloatList()
+    //var resolution = $.map(WCS.Util.stringToFloatArray()
 
     var rangeType = $.makeArray($node.find("swe|field").map(function() {
         var $field = $(this);
@@ -494,8 +517,8 @@ WCS.Core.parseCoverageDescription = function($node) {
                     reason: $nilValue.attr("reason")
                 }
             })),
-            allowedValues: stringToIntList($field.find("swe|interval").text()),
-            significantFigures: parseInt($field.find("swe|interval").text())
+            allowedValues: WCS.Util.stringToIntArray($field.find("swe|interval").text()),
+            significantFigures: parseInt($field.find("swe|significantFigures").text())
         };
     }));
     
@@ -505,13 +528,15 @@ WCS.Core.parseCoverageDescription = function($node) {
         bounds: bounds,
         size: size,
         resolution: [], // TODO: parse offset vectors
-        origin: stringToFloatList($domainSet.find("gml|pos").text()),
+        origin: WCS.Util.stringToFloatArray($domainSet.find("gml|pos").text()),
         rangeType: rangeType,
         coverageSubtype: $node.find("wcs|CoverageSubtype").text(),
         supportedCRSs: $.makeArray($node.find("wcs|supportedCRS").map(function() { return $(this).text(); })),
         nativeCRS: $node.find("wcs|nativeCRS").text(),
         supportedFormats: $.makeArray($node.find("wcs|supportedFormat").map(function() { return $(this).text(); }))
-    }
+    };
+
+    return obj;
 };
 
 /* setup global namespace declarations */
