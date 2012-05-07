@@ -372,7 +372,7 @@ WCS.Core.parseCapabilities = function($node) {
                     country: $prov.find("ows|Address ows|Country").text(),
                     electronicMailAddress: $prov.find("ows|Address ows|ElectronicMailAddress").text(),
                 },
-                onlineResource: $prov.find("ows|OnlineResource").attr("xlink\\:href"),
+                onlineResource: $prov.find("ows|OnlineResource").attr("xlink:href"),
                 hoursOfService: $prov.find("ows|HoursOfService").text(),
                 contactInstructions:$prov.find("ows|ContactInstructions").text()
             },
@@ -382,12 +382,12 @@ WCS.Core.parseCapabilities = function($node) {
             var $op = $(this);
             return {
                 name: $op.attr("name"),
-                getUrl: $op.find("ows|Post").attr("href"),
-                postUrl: $op.find("ows|Get").attr("xlink\\:href")
+                getUrl: $op.find("ows|Post").attr("xlink:href"),
+                postUrl: $op.find("ows|Get").attr("xlink:href")
             };
         })),
         contents: {
-            coverages: $.makeArray($node.find("wcs|Contents ows|CoverageSummary").map(function() {
+            coverages: $.makeArray($node.find("wcs|Contents wcs|CoverageSummary").map(function() {
                 var $sum = $(this);
                 return {
                     coverageId: $sum.find("wcs|CoverageId").text(),
@@ -515,6 +515,7 @@ WCS.Core.parseCoverageDescription = function($node) {
 };
 
 /* setup global namespace declarations */
+$.xmlns["xlink"] = "http://www.w3.org/1999/xlink";
 $.xmlns["ows"] = "http://www.opengis.net/ows/2.0";
 $.xmlns["wcs"] = "http://www.opengis.net/wcs/2.0";
 $.xmlns["gml"] = "http://www.opengis.net/gml/3.2";
