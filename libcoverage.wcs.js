@@ -64,7 +64,7 @@ WCS.Core.getCapabilitiesURL = function(url, options, extraParams) {
     var params = ['service=wcs', 'version=2.0.0', 'request=getcapabilities'];
 
     if (options.updatesequence) {
-        params.push('containment=' + options.updatesequence);
+        params.push('updatesequence=' + options.updatesequence);
     }
     if (options.sections) {
         params.push('sections=' + options.sections.join(","));
@@ -93,14 +93,17 @@ WCS.Core.describeCoverageURL = function(url, coverageids, extraParams) {
         throw new Error("Parameters 'url' and 'coverageids' are mandatory.");
     }
 
-    options = options || {};
+    var params = ['service=wcs', 'version=2.0.0', 'request=describecoverage'];
+    
     extraParams = extraParams || {};
-    var ids = ((coverageids instanceof Array)
-               ? coverageids.join(",") : coverageids);
+    params.push('coverageid=' + ((typeof coverageids === "string")
+                ? coverageids : coverageids.join(",")));
+
+    
     
     var extra = WCS.Util.objectToKVP(extraParams);
     return url + (url.charAt(url.length-1) !== "?" ? "?" : "")
-            + "coverageid=" + ids + ((extra.length > 0) ? "&" + extra : "");
+            + params.join("&") + ((extra.length > 0) ? "&" + extra : "");
 };
 
 /**
@@ -110,6 +113,7 @@ WCS.Core.describeCoverageURL = function(url, coverageids, extraParams) {
  *
  * @param url: the base URL of the service
  * @param coverage: the ID of the coverage
+ * @param format: the desired format of the returned coverage
  * @param options: an object containing any the following optional parameters
  *
  *      -bbox: an array of four values in the following order:
@@ -317,8 +321,8 @@ WCS.Core.options = {
  */
 
 WCS.Core.parse = function(xml) {
-    var $root = $.parseXML(xml);
-    return WCS.Core.callParseFunctions($root[0].tagName, $root);
+    var root = $.parseXML(xml).documentElement;
+    return WCS.Core.callParseFunctions(root.localName, $(root));
 };
 
 /**
@@ -368,7 +372,7 @@ WCS.Core.parseCapabilities = function($node) {
                     country: $prov.find("ows|Address ows|Country").text(),
                     electronicMailAddress: $prov.find("ows|Address ows|ElectronicMailAddress").text(),
                 },
-                onlineResource: $prov.find("ows|OnlineResource").attr("xlink|href"),
+                onlineResource: $prov.find("ows|OnlineResource").attr("xlink\\:href"),
                 hoursOfService: $prov.find("ows|HoursOfService").text(),
                 contactInstructions:$prov.find("ows|ContactInstructions").text()
             },
@@ -378,8 +382,8 @@ WCS.Core.parseCapabilities = function($node) {
             var $op = $(this);
             return {
                 name: $op.attr("name"),
-                postUrl: $op.find("ows|Get").attr("xlink|href"),
-                getUrl: $op.find("ows|Post").attr("xlink|href")
+                getUrl: $op.find("ows|Post").attr("href"),
+                postUrl: $op.find("ows|Get").attr("xlink\\:href")
             };
         })),
         contents: {
