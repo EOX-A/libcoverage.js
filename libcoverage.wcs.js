@@ -456,7 +456,7 @@ WCS.Core.parseExceptionReport = function($node) {
     if (WCS.Core.options.throwOnException) {
         throw new Exception(parsed.text);
     }
-    else return ret;
+    else return parsed;
 };
 
 /**
