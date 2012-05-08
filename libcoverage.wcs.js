@@ -108,7 +108,7 @@ WCS.Util = function() {
 } ();
 
 /**
- *  module WCS.Core.Parse
+ *  module WCS.Core.KVP
  *
  * TODO: writeme
  *
@@ -181,8 +181,6 @@ WCS.Core.KVP = function() {
         params.push('coverageid=' + ((typeof coverageids === "string")
                     ? coverageids : coverageids.join(",")));
 
-        
-        
         var extra = WCS.Util.objectToKVP(extraParams);
         return url + (url.charAt(url.length-1) !== "?" ? "?" : "")
                 + params.join("&") + ((extra.length > 0) ? "&" + extra : "");
@@ -409,7 +407,11 @@ WCS.Core.Parse = function() {
      */
 
     parse: function(xml) {
-        var root = $.parseXML(xml).documentElement;
+        var root;
+        if (typeof xml === "string")
+            root = $.parseXML(xml).documentElement;
+        else
+            root = xml.documentElement;
         return WCS.Core.Parse.callParseFunctions(root.localName, $(root));
     },
 
