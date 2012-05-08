@@ -55,8 +55,8 @@ namespace("WCS.Backbone").Model = function() {
      *
      * This class provides access to service meta-data and contents
      *
-     * @method fetchAvailableCoverages: return a WCS.Backbone.CoverageSet of
-     *                                  all advertised coverages.
+     * @method fetchAdvertisedCoverages: return a WCS.Backbone.CoverageSet of
+     *                                   all advertised coverages.
      */
     
     var Service = XmlModel.extend({
@@ -66,13 +66,14 @@ namespace("WCS.Backbone").Model = function() {
         parse: function(response) {
             return WCS.Core.Parse.parse(response);
         },
-        fetchAvailableCoverages: function(options) {
-            var operations = this.get("operations");
+        fetchAdvertisedCoverages: function(options) {
+            var contents = this.get("contents");
             var ids = [];
-            if (operations)
-                ids = _.pluck(operations.coverages, "coverageId");
+            if (contents)
+                ids = _.pluck(contents.coverages, "coverageId");
                 
-            var cset = CoverageSet({
+            var cset = new CoverageSet([], {
+                urlRoot: this.urlRoot,
                 coverageIds: ids
             });
             cset.fetch(options);
