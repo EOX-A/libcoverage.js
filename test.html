@@ -16,7 +16,7 @@ var baseUrl = "http://www.example.com/";
 var wcsk = WCS.Core.KVP;
 var wcsp = WCS.Core.Parse;
 
-module("WCS KVP");
+module("WCS.Core.KVP");
 
 test("GetCapabilities simple", function() {
     var url = wcsk.getCapabilitiesURL(baseUrl);
@@ -76,7 +76,7 @@ test("GetCoverage size", function() {
 
 // TODO: more GetCov tests
 
-module("WCS parsing")
+module("WCS.Core.Parse")
 
 test("Capabilities", function() {
     var obj = wcsp.parse($("#capabilities").text());
