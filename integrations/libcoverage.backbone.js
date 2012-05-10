@@ -50,6 +50,8 @@ namespace("WCS.Backbone").Model = function() {
         }
     });
 
+    var classes = {};
+
     /**
      *  class WCS.Backbone.Service
      *
@@ -59,7 +61,7 @@ namespace("WCS.Backbone").Model = function() {
      *                                   all advertised coverages.
      */
     
-    var Service = XmlModel.extend({
+    classes.Service = XmlModel.extend({
         url: function() {
             return WCS.Core.KVP.getCapabilitiesURL(getValue(this, "urlRoot"));
         },
@@ -90,7 +92,7 @@ namespace("WCS.Backbone").Model = function() {
      *                         specified options
      */
 
-    var Coverage = XmlModel.extend({
+    classes.Coverage = XmlModel.extend({
         idAttribute: "coverageId",
         
         url: function() {
@@ -99,19 +101,22 @@ namespace("WCS.Backbone").Model = function() {
                 return WCS.Core.KVP.describeCoverageURL(url, this.id);
             // TODO: raise Error?
         },
-        parse: function(response){
+        parse: function(response) {
             if (_.has(response, "coverageId"))
                 return response;
             return WCS.Core.Parse.parse(response).coverageDescriptions[0];
         },
-        getDownloadUrl: function(format, options) {
-            var url = getValue(this, 'urlRoot') || getValue(this.collection, 'url');
-            return WCS.Core.KVP.getCoverageURL(url, this.id, format, options);
+        getRangeType: function() {
+            return this.get("rangeType");
+        },
+        getDownloadUrl: function(options) {
+            var url = getValue(this, 'urlRoot') || getValue(this.collection, 'urlRoot');
+            return WCS.Core.KVP.getCoverageURL(url, this.id, options);
         }
     });
 
-    var CoverageSet = XmlCollection.extend({
-        model: Coverage,
+    classes.CoverageSet = XmlCollection.extend({
+        model: classes.Coverage,
         initialize: function(models, options) {
             if (models.length == 0) {
                 this._ids = options.coverageIds || [];
@@ -129,10 +134,40 @@ namespace("WCS.Backbone").Model = function() {
             return WCS.Core.Parse.parse(response).coverageDescriptions;
         }
     });
-    
-    return {
-        Service: Service,
-        Coverage: Coverage,
-        CoverageSet: CoverageSet
+
+    // Add EOCoverageSet to the classes, if EO extension is included
+    if (namespace("WCS").EO) {
+        classes.EOCoverageSet = XmlCollection.extend({
+            initialize: function(models, options) {
+                this.options = options || {};
+                this.type = options.type || this.type;
+                if(this.type) {
+                    delete options.type;
+                    if (this.type === "coverages")
+                        this.model = classes.Coverage
+                    else if (this.type === "datasetSeries")
+                        this.model = classes.DatasetSeries
+                }
+                this.urlRoot = options.urlRoot || this.urlRoot;
+                this.eoid = options.eoid || this.eoid;
+            },
+            url: function() {
+                return WCS.EO.KVP.describeEOCoverageSetURL(
+                    this.urlRoot, this.eoid, this.options
+                );
+            },
+            parse: function(response){
+                var result = WCS.Core.Parse.parse(response);
+                this.coverageDescriptions = result.coverageDescriptions;
+                this.datasetSeriesDescriptions = result.datasetSeriesDescriptions;
+                switch(this.type) {
+                    case "coverages": return result.coverageDescriptions;
+                    case "datasetSeries": return result.datasetSeriesDescriptions;
+                    default: return _.union(result.coverageDescriptions, result.datasetSeriesDescriptions);
+                }
+            }
+        });
     }
+    
+    return classes;
 } ();
