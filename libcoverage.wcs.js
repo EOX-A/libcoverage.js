@@ -193,9 +193,8 @@ WCS.Core.KVP = function() {
      *
      * @param url: the base URL of the service
      * @param coverage: the ID of the coverage
-     * @param format: the desired format of the returned coverage
      * @param options: an object containing any the following optional parameters
-     *
+     *      -format: the desired format of the returned coverage
      *      -bbox: an array of four values in the following order:
      *             [minx, miny, maxx, maxy]
      *      -subsetX: the subset of the X axis as an array in the following form:
@@ -223,9 +222,9 @@ WCS.Core.KVP = function() {
      * @returns: the constructed request URL
      */
 
-    getCoverageURL: function(url, coverageid, format, options, extraParams) {
+    getCoverageURL: function(url, coverageid, options, extraParams) {
         if (!url || !coverageid || !format) {
-            throw new Error("Parameters 'url', 'coverageid' and 'format' are mandatory.");
+            throw new Error("Parameters 'url' and 'coverageid' are mandatory.");
         }
         options = options || {};
         subsetCRS = options.subsetCRS || "http://www.opengis.net/def/crs/EPSG/0/4326";
@@ -234,6 +233,8 @@ WCS.Core.KVP = function() {
         var params = ["service=wcs", "version=2.0.0", "request=getcoverage",
                     "coverageid=" + coverageid, "format=" + format];
 
+        if (options.format)
+            params.push("format=" + options.format);
         if (options.bbox && !options.subsetX && !options.subsetY) {
             options.subsetX = [options.bbox[0], options.bbox[2]];
             options.subsetY = [options.bbox[1], options.bbox[3]];
