@@ -103,12 +103,12 @@ WCS.EO.Parse = function() {
     return { /// begin public functions
     
     parseEOCoverageSetDescription: function($node) {
-        var cdescs = WCS.Core.parseFunctions["CoverageDescriptions"](
-            $node.find("wcs|CoverageDescriptions")
+        var cdescs = WCS.Core.Parse.callParseFunctions(
+            "CoverageDescriptions", $node.find("wcs|CoverageDescriptions")
         );
 
-        var dssdescs = WCS.Core.parseFunctions["DatasetSeriesDescriptions"](
-            $node.find("wcseo|DatasetSeriesDescriptions")
+        var dssdescs = WCS.Core.Parse.callParseFunctions(
+            "DatasetSeriesDescriptions", $node.find("wcseo|DatasetSeriesDescriptions")
         );
 
         return {
@@ -118,16 +118,15 @@ WCS.EO.Parse = function() {
     },
 
     parseDatasetSeriesDescriptions: function($node) {
-        var func = WCS.Core.parseFunctions["DatasetSeriesDescription"];
         var descs = $.makeArray($node.find("wcseo|DatasetSeriesDescription").map(function() {
-            return func($(this));
+            return WCS.Core.Parse.callParseFunctions("DatasetSeriesDescription", $(this));
         }));
 
         return {datasetSeriesDescriptions: descs};
     },
 
     parseDatasetSeriesDescription: function($node) {
-        
+        return {}; // TODO: implement
     },
 
     parseExtendedCoverageDescription: function($node) {
