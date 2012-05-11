@@ -5,7 +5,6 @@
     <script type="text/javascript" src="http://www.rfk.id.au/static/scratch/jquery.xmlns.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js"></script>
     <script type="text/javascript" src="./libcoverage.wcs.js"></script>
-    <script type="text/javascript" src="./libcoverage.eowcs.js"></script>
 
     <script>
     $(document).ready(function(){
@@ -48,30 +47,30 @@ test("DescribeCoverage multiple", function() {
 });
 
 test("GetCoverage simple", function() {
-    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff");
-    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&format=image/tiff");
+    var url = wcsk.getCoverageURL(baseUrl, "id1");
+    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1");
 });
 
 test("GetCoverage bbox", function() {
-    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff", {
+    var url = wcsk.getCoverageURL(baseUrl, "id1", {
         bbox: [1, 2, 3, 4]
     });
-    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&format=image/tiff&subset=x,http://www.opengis.net/def/crs/EPSG/0/4326(1,3)&subset=y,http://www.opengis.net/def/crs/EPSG/0/4326(2,4)");
+    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&subset=x,http://www.opengis.net/def/crs/EPSG/0/4326(1,3)&subset=y,http://www.opengis.net/def/crs/EPSG/0/4326(2,4)");
 });
 
 test("GetCoverage subsetX", function() {
-    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff", {
+    var url = wcsk.getCoverageURL(baseUrl, "id1", {
         subsetX: [1, 3],
         subsetCRS: "http://www.opengis.net/def/crs/EPSG/0/3857"
     });
-    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&format=image/tiff&subset=x,http://www.opengis.net/def/crs/EPSG/0/3857(1,3)");
+    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&subset=x,http://www.opengis.net/def/crs/EPSG/0/3857(1,3)");
 });
 
 test("GetCoverage size", function() {
-    var url = wcsk.getCoverageURL(baseUrl, "id1", "image/tiff", {
+    var url = wcsk.getCoverageURL(baseUrl, "id1", {
         size: [100, 100]
     });
-    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&format=image/tiff&size=x(100)&size=y(100)");
+    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=getcoverage&coverageid=id1&size=x(100)&size=y(100)");
 });
 
 // TODO: more GetCov tests
@@ -126,6 +125,14 @@ test("Capabilities", function() {
                 contactInstructions: "E-mails are usually answered within 3 working days."
             },
             role: "Service provider"
+        },
+        serviceMetadata: {
+            formatsSupported: [
+                "application/gml+xml",
+                "image/tiff",
+                "image/jp2"
+            ],
+            crssSupported: ["http://www.opengis.net/def/crs/EPSG/0/4326"]
         },
         operations: [{
             name: "GetCapabilities",
@@ -350,7 +357,14 @@ test("ExceptionReport", function() {
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <wcs:ServiceMetadata />
+  <wcs:ServiceMetadata>
+    <wcs:formatSupported>application/gml+xml</wcs:formatSupported>
+    <wcs:formatSupported>image/tiff</wcs:formatSupported>
+    <wcs:formatSupported>image/jp2</wcs:formatSupported>
+    <wcs:CrsMetadata>
+      <wcs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/4326</wcs:crsSupported>
+    </wcs:CrsMetadata>
+  </wcs:ServiceMetadata>
   <wcs:Contents>
     <wcs:CoverageSummary>
       <wcs:CoverageId>CoverageID1</wcs:CoverageId>
