@@ -1,0 +1,397 @@
+<html>
+<head>
+    <link rel="stylesheet" href="http://code.jquery.com/qunit/git/qunit.css" type="text/css" media="screen" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+    <script type="text/javascript" src="http://www.rfk.id.au/static/scratch/jquery.xmlns.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js"></script>
+    <script type="text/javascript" src="./libcoverage.wcs.js"></script>
+    <script type="text/javascript" src="./libcoverage.eowcs.js"></script>
+
+    <script>
+    $(document).ready(function(){
+
+var baseUrl = "http://www.example.com/";
+
+// namespace shortcuts
+var wcsk = WCS.Core.KVP;
+var eok = WCS.EO.KVP;
+var wcsp = WCS.Core.Parse;
+
+module("WCS.Core.KVP");
+
+test("DescribeEOCoverageSet simple", function() {
+    var url = eok.describeEOCoverageSetURL(baseUrl, "id1");
+    equal(url, "http://www.example.com/?service=wcs&version=2.0.0&request=describeeocoverageset&eoid=id1");
+});
+
+// TODO: more DescribeEOCoverageSet tests
+
+module("WCS.Core.Parse")
+
+test("Capabilities", function() {
+    var obj = wcsp.parse($("#capabilities").text());
+    deepEqual(obj.contents, {
+        coverages: [{
+            coverageId: "CoverageID1",
+            coverageSubtype: "ReferenceableDataset"
+        }, {
+            coverageId: "CoverageID2",
+            coverageSubtype: "RectifiedDataset"
+        }, {
+            coverageId: "CoverageID3",
+            coverageSubtype: "RectifiedDataset"
+        }, {
+            coverageId: "MosaicID1",
+            coverageSubtype: "RectifiedStitchedMosaic"
+        }],
+        datasetSeries: [{
+            datasetSeriesId: "SeriesID1",
+            timePeriod: [
+                new Date("2006-08-16T00:00:00"),
+                new Date("2006-08-31T00:00:00")
+            ]
+        }]
+    });    
+});
+
+test("CoverageDescriptions", function() {
+    var obj = wcsp.parse($("#coverageDescriptions").text());
+    deepEqual(obj, {
+        coverageDescriptions: [{
+            coverageId: "CoverageID1",
+            coverageSubtype: "RectifiedDataset",
+            dimensions: 2,
+            bounds: {
+                projection: "http://www.opengis.net/def/crs/EPSG/0/4326",
+                values: [32.26692700, 8.77892600, 46.21538200, 25.09349500]
+            },
+            size: [539, 448],
+            resolution: [],
+            origin: [46.24910355, 8.48775578],
+            rangeType: [{
+                name: "Band1_uint16",
+                description: "first band",
+                uom: "W.m-2.sr-1.nm-1",
+                nilValues: [{
+                    value: 0,
+                    reason: "http://www.opengis.net/def/nil/OGC/0/unknown"
+                }],
+                allowedValues: [0, 65535],
+                significantFigures: 5
+            }, {
+                name: "Band2_uint16",
+                description: "second band",
+                uom: "W.m-2.sr-1.nm-1",
+                nilValues: [{
+                    value: 0,
+                    reason: "http://www.opengis.net/def/nil/OGC/0/unknown"
+                }],
+                allowedValues: [0, 65535],
+                significantFigures: 5
+            }, {
+                name: "Band3_uint16",
+                description: "third band",
+                uom: "W.m-2.sr-1.nm-1",
+                nilValues: [{
+                    value: 0,
+                    reason: "http://www.opengis.net/def/nil/OGC/0/unknown"
+                }],
+                allowedValues: [0, 65535],
+                significantFigures: 5
+            }],
+            supportedCRSs: [],
+            nativeCRS: "",
+            supportedFormats: [],
+            footprint: [46.215382038266426, 11.452164999301536, 46.077138992332522, 12.56460056524387, 45.898160545555285, 13.88709473239655, 45.680873827856274, 15.27428923693798, 45.449785763554488, 16.732634573806106, 45.051916790463871, 18.910935999726473, 44.748011699503031, 20.408605523933062, 44.411941287675177, 21.96696659827764, 44.042016022159309, 23.519043285242258, 43.643722088460834, 25.093495248306709, 42.820580145843472, 24.697623348710682, 41.526815857193817, 24.095725514178625, 40.080867763238736, 23.448735861981131, 39.025151818307243, 22.989465254572469, 37.85145204973027, 22.50232224402901, 36.642481720935422, 22.01522231099019, 35.307014823570611, 21.498852478425345, 33.815137282909021, 20.944158667755332, 32.266926679766343, 20.386391220319478, 32.473013412727383, 19.564204682221426, 32.79995702514136, 18.208092189126496, 33.156754966055587, 16.635974830934515, 33.490105968579719, 15.045830395932443, 33.802420221893549, 13.468673053964881, 34.117627714568791, 11.788656279967018, 34.404759326849735, 10.10198645739054, 34.612069910182186, 8.778925655898064, 35.937735362108867, 9.065762626406386, 37.042634504980391, 9.314689072633191, 38.211692868275371, 9.571219329906695, 39.708832350160876, 9.910891562982675, 41.235238659326725, 10.256936653724585, 42.571739065122323, 10.570638082577355, 43.567273827516843, 10.804735163945022, 44.657040223845229, 11.06940217936636, 45.550039415025189, 11.28225456261711, 46.215382038266426, 11.452164999301536],
+            timePeriod: [
+                new Date("2006-08-22T09:20:58Z"),
+                new Date("2006-08-22T09:24:15Z")
+            ]
+        }]
+    });
+    // TODO: not yet complete. e.g: resolution...
+});
+
+// TODO: parse EOCoverageSetDescription
+
+    });
+    </script>
+
+<script type="text/xml" id="capabilities">
+<wcs:Capabilities updateSequence="20110610T153000Z" version="2.0.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
+  <ows:ServiceIdentification>
+    <ows:Title>Test</ows:Title>
+    <ows:Abstract>Test Abstract</ows:Abstract>
+    <ows:Keywords>
+      <ows:Keyword>KeywordA</ows:Keyword>
+      <ows:Keyword>KeywordB</ows:Keyword>
+      <ows:Keyword>KeywordC</ows:Keyword>
+    </ows:Keywords>
+    <ows:ServiceType codeSpace="OGC">OGC WCS</ows:ServiceType>
+    <ows:ServiceTypeVersion>2.0.0</ows:ServiceTypeVersion>
+    <ows:Profile>http://www.opengis.net/spec/WCS_application-profile_earth-observation/1.0/conf/eowcs</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_application-profile_earth-observation/1.0/conf/eowcs_get-kvp</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS/2.0/conf/core</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf/get-kvp</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf/post-xml</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_service-model_crs-predefined/1.0/conf/crs-predefined</ows:Profile>
+    <ows:Profile>http://www.placeholder.com/IMAGECRS</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_encoding_geotiff/1.0/conf/geotiff</ows:Profile>
+    <ows:Profile>http://www.placeholder.com/GML_and_GeoTIFF</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_service-model_scaling+interpolation/1.0/conf/scaling+interpolation</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_service-model_band-subsetting/1.0/conf/band-subsetting</ows:Profile>
+    <ows:Fees>No Fee</ows:Fees>
+    <ows:AccessConstraints>No constraint</ows:AccessConstraints>
+  </ows:ServiceIdentification>
+  <ows:ServiceProvider>
+    <ows:ProviderName>Provider Inc.</ows:ProviderName>
+    <ows:ProviderSite xlink:href="http://www.example.com" xlink:type="simple" />
+    <ows:ServiceContact>
+      <ows:IndividualName>John Doe</ows:IndividualName>
+      <ows:PositionName>CEO</ows:PositionName>
+      <ows:ContactInfo>
+        <ows:Phone>
+          <ows:Voice>01/2345678</ows:Voice>
+          <ows:Facsimile>01/23456789</ows:Facsimile>
+        </ows:Phone>
+        <ows:Address>
+          <ows:DeliveryPoint>Somestreet 1/2</ows:DeliveryPoint>
+          <ows:City>Fooville</ows:City>
+          <ows:AdministrativeArea>Foostate</ows:AdministrativeArea>
+          <ows:PostalCode>12345</ows:PostalCode>
+          <ows:Country>United States of Foo</ows:Country>
+          <ows:ElectronicMailAddress>john.doe@example.com</ows:ElectronicMailAddress>
+        </ows:Address>
+        <ows:OnlineResource xlink:href="http://www.example.org" xlink:type="simple" />
+        <ows:HoursOfService>Mon - Fri 10:30 - 17:00</ows:HoursOfService>
+        <ows:ContactInstructions>E-mails are usually answered within 3 working days.</ows:ContactInstructions>
+      </ows:ContactInfo>
+      <ows:Role>Service provider</ows:Role>
+    </ows:ServiceContact>
+  </ows:ServiceProvider>
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://example.com/ows?" xlink:type="simple" />
+          <ows:Post xlink:href="http://example.com/ows?" xlink:type="simple">
+            <ows:Constraint name="PostEncoding">
+              <ows:AllowedValues>
+                <ows:Value>XML</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Post>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="DescribeCoverage">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://example.com/ows?" xlink:type="simple" />
+          <ows:Post xlink:href="http://example.com/ows?" xlink:type="simple">
+            <ows:Constraint name="PostEncoding">
+              <ows:AllowedValues>
+                <ows:Value>XML</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Post>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetCoverage">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://example.com/ows?" xlink:type="simple" />
+          <ows:Post xlink:href="http://example.com/ows?" xlink:type="simple">
+            <ows:Constraint name="PostEncoding">
+              <ows:AllowedValues>
+                <ows:Value>XML</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Post>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="DescribeEOCoverageSet">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://example.com/ows?" xlink:type="simple" />
+          <ows:Post xlink:href="http://example.com/ows?" xlink:type="simple">
+            <ows:Constraint name="PostEncoding">
+              <ows:AllowedValues>
+                <ows:Value>XML</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Post>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
+  <wcs:ServiceMetadata />
+  <wcs:Contents>
+    <wcs:CoverageSummary>
+      <wcs:CoverageId>CoverageID1</wcs:CoverageId>
+      <wcs:CoverageSubtype>ReferenceableDataset</wcs:CoverageSubtype>
+    </wcs:CoverageSummary>
+    <wcs:CoverageSummary>
+      <wcs:CoverageId>CoverageID2</wcs:CoverageId>
+      <wcs:CoverageSubtype>RectifiedDataset</wcs:CoverageSubtype>
+    </wcs:CoverageSummary>
+    <wcs:CoverageSummary>
+      <wcs:CoverageId>CoverageID3</wcs:CoverageId>
+      <wcs:CoverageSubtype>RectifiedDataset</wcs:CoverageSubtype>
+    </wcs:CoverageSummary>
+    <wcs:CoverageSummary>
+      <wcs:CoverageId>MosaicID1</wcs:CoverageId>
+      <wcs:CoverageSubtype>RectifiedStitchedMosaic</wcs:CoverageSubtype>
+    </wcs:CoverageSummary>
+    <wcseo:DatasetSeriesSummary>
+      <ows:WGS84BoundingBox>
+        <ows:LowerCorner>-4.04296900 32.08007800</ows:LowerCorner>
+        <ows:UpperCorner>33.13476600 45.17578100</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <wcseo:DatasetSeriesId>SeriesID1</wcseo:DatasetSeriesId>
+      <gml:TimePeriod gml:id="SeriesID1_timeperiod">
+        <gml:beginPosition>2006-08-16T00:00:00</gml:beginPosition>
+        <gml:endPosition>2006-08-31T00:00:00</gml:endPosition>
+      </gml:TimePeriod>
+    </wcseo:DatasetSeriesSummary>
+  </wcs:Contents>
+</wcs:Capabilities>
+</script>
+
+<script type="text/xml" id="coverageDescriptions">
+<wcs:CoverageDescriptions xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
+  <wcs:CoverageDescription gml:id="CoverageID1">
+    <gml:boundedBy>
+      <gml:Envelope axisLabels="lat long" srsDimension="2" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" uomLabels="deg deg">
+        <gml:lowerCorner>32.26692700 8.77892600</gml:lowerCorner>
+        <gml:upperCorner>46.21538200 25.09349500</gml:upperCorner>
+      </gml:Envelope>
+    </gml:boundedBy>
+    <wcs:CoverageId>CoverageID1</wcs:CoverageId>
+    <gmlcov:metadata>
+      <wcseo:EOMetadata>
+        <eop:EarthObservation gml:id="eop_CoverageID1" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:om="http://www.opengis.net/om/2.0" xmlns:swe="http://www.opengis.net/swe/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/opt/2.0 ../xsd/opt.xsd">
+          <om:phenomenonTime>
+            <gml:TimePeriod gml:id="tp_CoverageID1">
+              <gml:beginPosition>2006-08-22T09:20:58Z</gml:beginPosition>
+              <gml:endPosition>2006-08-22T09:24:15Z</gml:endPosition>
+            </gml:TimePeriod>
+          </om:phenomenonTime>
+          <om:featureOfInterest>
+            <eop:Footprint gml:id="footprint_MER_FRS_1PNPDE20060822_092058_000001972050_00308_23408_0077_uint16_reduced_compressed">
+              <eop:multiExtentOf>
+                <gml:MultiSurface gml:id="multisurface_MER_FRS_1PNPDE20060822_092058_000001972050_00308_23408_0077_uint16_reduced_compressed" srsName="EPSG:4326">
+                  <gml:surfaceMember>
+                    <gml:Polygon gml:id="polygon_MER_FRS_1PNPDE20060822_092058_000001972050_00308_23408_0077_uint16_reduced_compressed">
+                      <gml:exterior>
+                        <gml:LinearRing>
+                          <gml:posList>46.215382038266426 11.452164999301536 46.077138992332522 12.56460056524387 45.898160545555285 13.88709473239655 45.680873827856274 15.27428923693798 45.449785763554488 16.732634573806106 45.051916790463871 18.910935999726473 44.748011699503031 20.408605523933062 44.411941287675177 21.96696659827764 44.042016022159309 23.519043285242258 43.643722088460834 25.093495248306709 42.820580145843472 24.697623348710682 41.526815857193817 24.095725514178625 40.080867763238736 23.448735861981131 39.025151818307243 22.989465254572469 37.85145204973027 22.50232224402901 36.642481720935422 22.01522231099019 35.307014823570611 21.498852478425345 33.815137282909021 20.944158667755332 32.266926679766343 20.386391220319478 32.473013412727383 19.564204682221426 32.79995702514136 18.208092189126496 33.156754966055587 16.635974830934515 33.490105968579719 15.045830395932443 33.802420221893549 13.468673053964881 34.117627714568791 11.788656279967018 34.404759326849735 10.10198645739054 34.612069910182186 8.778925655898064 35.937735362108867 9.065762626406386 37.042634504980391 9.314689072633191 38.211692868275371 9.571219329906695 39.708832350160876 9.910891562982675 41.235238659326725 10.256936653724585 42.571739065122323 10.570638082577355 43.567273827516843 10.804735163945022 44.657040223845229 11.06940217936636 45.550039415025189 11.28225456261711 46.215382038266426 11.452164999301536</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:Polygon>
+                  </gml:surfaceMember>
+                </gml:MultiSurface>
+              </eop:multiExtentOf>
+            </eop:Footprint>
+          </om:featureOfInterest>
+        </eop:EarthObservation>
+      </wcseo:EOMetadata>
+    </gmlcov:metadata>
+    <gml:domainSet>
+      <gml:RectifiedGrid dimension="2" gml:id="CoverageID1_grid">
+        <gml:limits>
+          <gml:GridEnvelope>
+            <gml:low>0 0</gml:low>
+            <gml:high>538 447</gml:high>
+          </gml:GridEnvelope>
+        </gml:limits>
+        <gml:axisLabels>lat long</gml:axisLabels>
+        <gml:origin>
+          <gml:Point gml:id="CoverageID1_grid_origin" srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+            <gml:pos>46.24910355 8.48775578</gml:pos>
+          </gml:Point>
+        </gml:origin>
+        <gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/4326">0.0 0.03139097</gml:offsetVector>
+        <gml:offsetVector srsName="http://www.opengis.net/def/crs/EPSG/0/4326">-0.03137006 0.0</gml:offsetVector>
+      </gml:RectifiedGrid>
+    </gml:domainSet>
+    <gmlcov:rangeType>
+      <swe:DataRecord>
+        <swe:field name="Band1_uint16">
+          <swe:Quantity definition="http://www.opengis.net/def/property/OGC/0/Radiance">
+            <swe:description>first band</swe:description>
+            <swe:nilValues>
+              <swe:NilValues>
+                <swe:nilValue reason="http://www.opengis.net/def/nil/OGC/0/unknown">0</swe:nilValue>
+              </swe:NilValues>
+            </swe:nilValues>
+            <swe:uom code="W.m-2.sr-1.nm-1" />
+            <swe:constraint>
+              <swe:AllowedValues>
+                <swe:interval>0 65535</swe:interval>
+                <swe:significantFigures>5</swe:significantFigures>
+              </swe:AllowedValues>
+            </swe:constraint>
+          </swe:Quantity>
+        </swe:field>
+        <swe:field name="Band2_uint16">
+          <swe:Quantity definition="http://www.opengis.net/def/property/OGC/0/Radiance">
+            <swe:description>second band</swe:description>
+            <swe:nilValues>
+              <swe:NilValues>
+                <swe:nilValue reason="http://www.opengis.net/def/nil/OGC/0/unknown">0</swe:nilValue>
+              </swe:NilValues>
+            </swe:nilValues>
+            <swe:uom code="W.m-2.sr-1.nm-1" />
+            <swe:constraint>
+              <swe:AllowedValues>
+                <swe:interval>0 65535</swe:interval>
+                <swe:significantFigures>5</swe:significantFigures>
+              </swe:AllowedValues>
+            </swe:constraint>
+          </swe:Quantity>
+        </swe:field>
+        <swe:field name="Band3_uint16">
+          <swe:Quantity definition="http://www.opengis.net/def/property/OGC/0/Radiance">
+            <swe:description>third band</swe:description>
+            <swe:nilValues>
+              <swe:NilValues>
+                <swe:nilValue reason="http://www.opengis.net/def/nil/OGC/0/unknown">0</swe:nilValue>
+              </swe:NilValues>
+            </swe:nilValues>
+            <swe:uom code="W.m-2.sr-1.nm-1" />
+            <swe:constraint>
+              <swe:AllowedValues>
+                <swe:interval>0 65535</swe:interval>
+                <swe:significantFigures>5</swe:significantFigures>
+              </swe:AllowedValues>
+            </swe:constraint>
+          </swe:Quantity>
+        </swe:field>
+      </swe:DataRecord>
+    </gmlcov:rangeType>
+    <wcs:ServiceParameters>
+      <wcs:CoverageSubtype>RectifiedDataset</wcs:CoverageSubtype>
+    </wcs:ServiceParameters>
+  </wcs:CoverageDescription>
+</wcs:CoverageDescriptions>
+</script>
+<script type="text/xml" id="exceptionReport">
+<ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.0" xml:lang="en-US" xsi:schemaLocation="http://www.opengis.net/ows/2.0 http://schemas.opengis.net/ows/2.0/owsExceptionReport.xsd">
+  <ows:Exception exceptionCode="InvalidParameterValue" locator="request">
+    <ows:ExceptionText>Invalid parameter 'Foo'.</ows:ExceptionText>
+  </ows:Exception>
+</ows:ExceptionReport>
+</script>
+</head>
+<body>
+    <h1 id="qunit-header">libcoverage.js test suite</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+</body>
+</html>
+
