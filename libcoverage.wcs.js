@@ -223,7 +223,7 @@ WCS.Core.KVP = function() {
      */
 
     getCoverageURL: function(url, coverageid, options, extraParams) {
-        if (!url || !coverageid || !format) {
+        if (!url || !coverageid) {
             throw new Error("Parameters 'url' and 'coverageid' are mandatory.");
         }
         options = options || {};
@@ -231,7 +231,7 @@ WCS.Core.KVP = function() {
         if (url.charAt(url.length-1) !== "?")
             url += "?";
         var params = ["service=wcs", "version=2.0.0", "request=getcoverage",
-                    "coverageid=" + coverageid, "format=" + format];
+                    "coverageid=" + coverageid];
 
         if (options.format)
             params.push("format=" + options.format);
@@ -429,6 +429,7 @@ WCS.Core.Parse = function() {
     parseCapabilities: function($node) {
         var $id = $node.find("ows|ServiceIdentification");
         var $prov = $node.find("ows|ServiceProvider");
+        var $sm = $node.find("wcs|ServiceMetadata");
         
         return {
             serviceIdentification: {
@@ -468,6 +469,10 @@ WCS.Core.Parse = function() {
                     contactInstructions:$prov.find("ows|ContactInstructions").text()
                 },
                 role: $prov.find("ows|Role").text()
+            },
+            serviceMetadata: { // TODO: not yet standardized
+                formatsSupported: $sm.find("wcs|formatSupported").map(function() { return $(this).text(); }).get(),
+                crssSupported: $sm.find("wcs|CrsMetadata wcs|crsSupported").map(function() { return $(this).text(); }).get()
             },
             operations: $.makeArray($node.find("ows|OperationsMetadata ows|Operation").map(function() {
                 var $op = $(this);
