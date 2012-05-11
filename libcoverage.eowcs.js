@@ -129,6 +129,23 @@ WCS.EO.Parse = function() {
         return {}; // TODO: implement
     },
 
+    parseExtendedCapabilities: function($node) {
+        return {
+            contents: {
+                datasetSeries: $.makeArray($node.find("wcs|Contents wcseo|DatasetSeriesSummary").map(function() {
+                    var $sum = $(this);
+                    return {
+                        datasetSeriesId: $sum.find("wcseo|DatasetSeriesId").text(),
+                        timePeriod: [
+                            new Date($sum.find("gml|beginPosition").text()),
+                            new Date($sum.find("gml|endPosition").text())
+                        ]
+                    };
+                }))
+            }
+        }
+    },
+
     parseExtendedCoverageDescription: function($node) {
         $eoMetadata = $node.find("wcseo|EOMetadata");
         if ($eoMetadata.size() == 1) {
@@ -155,5 +172,6 @@ WCS.Core.Parse.pushParseFunctions({
     "EOCoverageSetDescription": WCS.EO.Parse.parseEOCoverageSetDescription,
     "DatasetSeriesDescriptions": WCS.EO.Parse.parseDatasetSeriesDescriptions,
     "DatasetSeriesDescription": WCS.EO.Parse.parseDatasetSeriesDescription,
+    "Capabilities": WCS.EO.Parse.parseExtendedCapabilities,
     "CoverageDescription": WCS.EO.Parse.parseExtendedCoverageDescription
 });
