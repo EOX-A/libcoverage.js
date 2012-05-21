@@ -15,6 +15,8 @@ Dependencies:
     to JavaScript objects. **Attention:** It must be capable of namespace-aware
     selecting XML elements using the CSS namespace rules (e.g:
     ```$node.find("wcs|ServiceMetadata");```).
+    A good implementation for namespace aware selecting can be found `here
+    <www.rfk.id.au/blog/entry/xmlns-selectors-jquery/>`_. 
 
 Drawbacks:
 
