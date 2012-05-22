@@ -289,6 +289,24 @@ WCS.Core.KVP = function() {
 
 WCS.Core.Parse = function() {
 
+    /// extend jQuery
+
+    (function( $ ) {
+        /**
+         *  jQuery plugin textArray
+         *
+         * This jQuery plugin allows the selection of text from multiple
+         * elements and returns them as array.
+         */
+        $.fn.textArray = function() {
+            return this.map(function() {
+                return $(this).text()
+            }).get();
+        };
+    })( jQuery );
+    
+    ///
+
     /// begin private fields
 
     /**
@@ -435,14 +453,10 @@ WCS.Core.Parse = function() {
             serviceIdentification: {
                 title: $id.find("ows|Title").text(),
                 abstract: $id.find("ows|Abstract").text(),
-                keywords: $.makeArray($id.find("ows|Keyword").map(function() {
-                    return $(this).text();
-                })),
+                keywords: $id.find("ows|Keyword").textArray(),
                 serviceType: $id.find("ows|ServiceType").text(),
                 serviceTypeVersion: $id.find("ows|ServiceTypeVersion").text(),
-                profiles: $.makeArray($id.find("ows|Profile").map(function() {
-                    return $(this).text();
-                })),
+                profiles: $id.find("ows|Profile").textArray(),
                 fees: $id.find("ows|Fees").text(),
                 accessConstraints: $id.find("ows|AccessConstraints").text()
             },
@@ -471,8 +485,8 @@ WCS.Core.Parse = function() {
                 role: $prov.find("ows|Role").text()
             },
             serviceMetadata: { // TODO: not yet standardized
-                formatsSupported: $sm.find("wcs|formatSupported").map(function() { return $(this).text(); }).get(),
-                crssSupported: $sm.find("wcs|CrsMetadata wcs|crsSupported").map(function() { return $(this).text(); }).get()
+                formatsSupported: $sm.find("wcs|formatSupported").textArray(),
+                crssSupported: $sm.find("wcs|CrsMetadata wcs|crsSupported").textArray()
             },
             operations: $.makeArray($node.find("ows|OperationsMetadata ows|Operation").map(function() {
                 var $op = $(this);
@@ -528,9 +542,9 @@ WCS.Core.Parse = function() {
      */
 
     parseCoverageDescriptions: function($node) {
-        var descs = $.makeArray($node.find("wcs|CoverageDescription").map(function() {
+        var descs = $node.find("wcs|CoverageDescription").map(function() {
             return WCS.Core.Parse.callParseFunctions(this.localName, $(this));
-        }));
+        }).get();
         return {coverageDescriptions: descs};
     },
 
@@ -546,54 +560,71 @@ WCS.Core.Parse = function() {
 
     parseCoverageDescription: function($node) {
         var $envelope = $node.find("gml|Envelope");
-        var bounds = {
-            projection: $envelope.attr("srsName"),
-            values: WCS.Util.stringToFloatArray($envelope.find("gml|lowerCorner").text()).concat(
-                    WCS.Util.stringToFloatArray($envelope.find("gml|upperCorner").text()))
-        };
-
         var $domainSet = $node.find("gml|domainSet");
-        // TODO: improve this: also take gml|low into account
-        var size = $.map(WCS.Util.stringToIntArray($domainSet.find("gml|high").text()), function(val) {
-            return val + 1;
+
+        var low = WCS.Util.stringToIntArray($domainSet.find("gml|low").text()),
+            high = WCS.Util.stringToIntArray($domainSet.find("gml|high").text());
+        
+        var size = [];
+        for (var i = 0; i < Math.min(low.length, high.length); ++i) {
+            size.push(high[i] + 1 - low[i]);
+        }
+
+        var offsetVectors = [];
+        $domainSet.find("gml|offsetVector").each(function() {
+            offsetVectors.push(WCS.Util.stringToFloatArray($(this).text()));
         });
 
-        // TODO: implement
-        //var resolution = $.map(WCS.Util.stringToFloatArray()
-
-        var rangeType = $.makeArray($node.find("swe|field").map(function() {
-            var $field = $(this);
-            return {
-                name: $field.attr("name"),
-                description: $field.find("swe|description").text(),
-                uom: $field.find("swe|uom").attr("code"),
-                nilValues: $.makeArray($field.find("swe|nilValue").map(function(){
-                    var $nilValue = $(this);
-                    return {
-                        value: parseInt($nilValue.text()),
-                        reason: $nilValue.attr("reason")
-                    }
-                })),
-                allowedValues: WCS.Util.stringToIntArray($field.find("swe|interval").text()),
-                significantFigures: parseInt($field.find("swe|significantFigures").text())
-            };
-        }));
+        // simplified resolution interface. does not make sense for not axis 
+        // aligned offset vectors.
+        var resolution = [];
+        for (var i = 0; i < offsetVectors.length; ++i) {
+            for (var j = 0; j < offsetVectors.length; ++j) {
+                if (offsetVectors[j][i] != 0.0) {
+                    resolution.push(offsetVectors[j][i]);
+                }
+                continue;
+            }
+        }
         
-        var obj = {
+        return {
             coverageId: $node.find("wcs|CoverageId").text(),
             dimensions: parseInt($node.find("gml|RectifiedGrid").attr("dimension")),
-            bounds: bounds,
+            bounds: {
+                projection: $envelope.attr("srsName"),
+                lower: WCS.Util.stringToFloatArray($envelope.find("gml|lowerCorner").text()),
+                upper: WCS.Util.stringToFloatArray($envelope.find("gml|upperCorner").text())
+            },
+            envelope: {
+                low: low,
+                high: high
+            },
             size: size,
-            resolution: [], // TODO: parse offset vectors
             origin: WCS.Util.stringToFloatArray($domainSet.find("gml|pos").text()),
-            rangeType: rangeType,
+            offsetVectors: offsetVectors,
+            resolution: resolution,
+            rangeType: $node.find("swe|field").map(function() {
+                var $field = $(this);
+                return {
+                    name: $field.attr("name"),
+                    description: $field.find("swe|description").text(),
+                    uom: $field.find("swe|uom").attr("code"),
+                    nilValues: $field.find("swe|nilValue").map(function(){
+                        var $nilValue = $(this);
+                        return {
+                            value: parseInt($nilValue.text()),
+                            reason: $nilValue.attr("reason")
+                        }
+                    }).get(),
+                    allowedValues: WCS.Util.stringToIntArray($field.find("swe|interval").text()),
+                    significantFigures: parseInt($field.find("swe|significantFigures").text())
+                };
+            }).get(),
             coverageSubtype: $node.find("wcs|CoverageSubtype").text(),
-            supportedCRSs: $.makeArray($node.find("wcs|supportedCRS").map(function() { return $(this).text(); })),
+            supportedCRSs: $node.find("wcs|supportedCRS").textArray(),
             nativeCRS: $node.find("wcs|nativeCRS").text(),
-            supportedFormats: $.makeArray($node.find("wcs|supportedFormat").map(function() { return $(this).text(); }))
+            supportedFormats: $node.find("wcs|supportedFormat").textArray()
         };
-
-        return obj;
     }
 
     } /// end public functions
