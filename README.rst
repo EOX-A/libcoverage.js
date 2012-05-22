@@ -11,10 +11,9 @@ returned from a WCS service.
 
 Dependencies:
 
-  - jQuery (or any other similar ($) - DOM library): for parsing XML documents
-    to JavaScript objects. **Attention:** It must be capable of namespace-aware
-    selecting XML elements using the CSS namespace rules (e.g:
-    ```$node.find("wcs|ServiceMetadata");```).
+  - jQuery: for parsing XML documents to JavaScript objects. **Attention:**
+    It must be capable of namespace-aware selecting XML elements using the CSS
+    namespace rules (e.g: ```$node.find("wcs|ServiceMetadata");```).
     A good implementation for namespace aware selecting can be found `here
     <www.rfk.id.au/blog/entry/xmlns-selectors-jquery/>`_. 
 
@@ -22,11 +21,11 @@ Drawbacks:
 
   - Libcoverage.js does *not* send and receive requests of any kind. This was
     designed with the intention to maximize compatibility with other DOM/ajax
-    libraries. Since jQuery (or a similar library) is already a dependency, the
-    included `ajax function <http://api.jquery.com/jQuery.ajax/>`_ can be used
-    to dispatch the generated requests and react to the responses.
-    Otherwise, the `XMLHttpRequest <http://www.w3.org/TR/XMLHttpRequest/>`_
-    method is also legitimate.
+    libraries. Since jQuery is already a dependency, the included
+    `ajax function <http://api.jquery.com/jQuery.ajax/>`_ can be used to
+    dispatch the generated requests and react to the responses. Otherwise, the
+    `XMLHttpRequest <http://www.w3.org/TR/XMLHttpRequest/>`_ method is also
+    possible.
 
   - Responses can only be parsed in a general way with the
     ``WCS.Core.Parse.parse`` function.
@@ -78,8 +77,27 @@ results of all registered functions are deep-merged together, so the extending
 parse functions should only parse information not yet included in the main
 parsing result.
 
-Example: EO-WCS
-```````````````
+To extend the core parsing capabilities with some specific functionality, one
+first has to design the parsing function which always takes the jQuery wrapped
+XML node as parameter:
+::
+
+    var parseExtendedCapabilities = function($node) {
+        return {
+            // parse data and insert it here
+            specialData: $node.find("wcs|SpecialData").text()
+        }
+    }
+
+Then, the function has to be registered for the node name (without the
+namespace prefix):
+::
+
+    WCS.Core.Parse.pushParseFunction("Capabilities", parseExtendedCapabilities);
+
+
+Example extension: EO-WCS
+`````````````````````````
 
 Libcoverage.js ships with a client extension for `Earth Observation (EO-WCS)
 <https://portal.opengeospatial.org/files/?artifact_id=45404>`_. It provides a
@@ -96,7 +114,7 @@ interval and the footprint.
 Integrations
 ------------
 
-Currently there is only one integration, namely for MVC framework `Backbone
+Currently there is only one integration, namely for the MVC framework `Backbone
 <http://documentcloud.github.com/backbone/>`_. The integration provides the
 models ``Service`` and ``Coverage`` and the collection ``CoverageSet``. If the
 EO-WCS extension for libcoverage.js is also available, then the EOCoverageSet
