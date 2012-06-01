@@ -287,7 +287,7 @@ WCS.Core.KVP = function() {
  *
  */
 
-WCS.Core.Parse = function() {
+WCS.Core.Parse = (function() {
 
     /// extend jQuery
 
@@ -326,10 +326,9 @@ WCS.Core.Parse = function() {
     $.xmlns["gml"] = "http://www.opengis.net/gml/3.2";
     $.xmlns["gmlcov"] = "http://www.opengis.net/gmlcov/1.0";
     $.xmlns["swe"] = "http://www.opengis.net/swe/2.0";
+    $.xmlns["crs"] = "http://www.opengis.net/wcs/service-extension/crs/1.0";
 
     /// end private fields
-
-    return { /// begin private fields
 
     /**
      *  function WCS.Core.pushParseFunction
@@ -346,14 +345,14 @@ WCS.Core.Parse = function() {
      *                       extensive properties shall be parsed.
      */
 
-    pushParseFunction: function(tagName, parseFunction) {
+    var pushParseFunction = function(tagName, parseFunction) {
         if (parseFunctions.hasOwnProperty(tagName)) {
             parseFunctions[tagName].push(parseFunction);
         }
         else {
             parseFunctions[tagName] = [parseFunction];
         }
-    },
+    };
 
     /**
      *  function WCS.Core.pushParseFunctions
@@ -365,11 +364,11 @@ WCS.Core.Parse = function() {
      *          and the value the parsing function.
      */
 
-    pushParseFunctions: function(obj) {
+    var pushParseFunctions = function(obj) {
         for (var key in obj) {
-            WCS.Core.Parse.pushParseFunction(key, obj[key]);
+            pushParseFunction(key, obj[key]);
         }
-    },
+    };
 
     /**
      *  function WCS.Core.callParseFunctions
@@ -384,7 +383,7 @@ WCS.Core.Parse = function() {
      * @return: the merged object of all parsing results
      */
 
-    callParseFunctions: function(tagName, $node) {
+    var callParseFunctions = function(tagName, $node) {
         if (parseFunctions.hasOwnProperty(tagName)) {
             var funcs = parseFunctions[tagName],
                 endResult = {};
@@ -396,7 +395,7 @@ WCS.Core.Parse = function() {
         }
         else
             throw new Error("No parsing function for tag name '" + tagName + "' registered.");
-    },
+    };
 
     /**
      *  object WCS.Core.options
@@ -408,9 +407,9 @@ WCS.Core.Parse = function() {
      *                             thrown when an ows:ExceptionReport is parsed.
      */
 
-    options: {
+    var options = {
         throwOnException: false
-    },
+    };
 
     /**
      *  function WCS.Core.parse
@@ -425,88 +424,15 @@ WCS.Core.Parse = function() {
      *           or a collection thereof.
      */
 
-    parse: function(xml) {
+    var parse = function(xml) {
         var root;
         if (typeof xml === "string")
             root = $.parseXML(xml).documentElement;
         else
             root = xml.documentElement;
         return WCS.Core.Parse.callParseFunctions(root.localName, $(root));
-    },
+    };
 
-    /**
-     *  function WCS.Core.parseCapabilities
-     *
-     * Parsing function for wcs:Capabilities elements.
-     *
-     * @param $node: the (jQuery) wrapped DOM object
-     *
-     * @returns: the parsed object
-     */
-
-    parseCapabilities: function($node) {
-        var $id = $node.find("ows|ServiceIdentification");
-        var $prov = $node.find("ows|ServiceProvider");
-        var $sm = $node.find("wcs|ServiceMetadata");
-        
-        return {
-            serviceIdentification: {
-                title: $id.find("ows|Title").text(),
-                abstract: $id.find("ows|Abstract").text(),
-                keywords: $id.find("ows|Keyword").textArray(),
-                serviceType: $id.find("ows|ServiceType").text(),
-                serviceTypeVersion: $id.find("ows|ServiceTypeVersion").text(),
-                profiles: $id.find("ows|Profile").textArray(),
-                fees: $id.find("ows|Fees").text(),
-                accessConstraints: $id.find("ows|AccessConstraints").text()
-            },
-            serviceProvider: {
-                providerName: $prov.find("ows|ProviderName").text(),
-                providerSite: $prov.find("ows|ProviderSite").attr("xlink:href"),
-                individualName: $prov.find("ows|IndividualName").text(),
-                positionName: $prov.find("ows|PositionName").text(),
-                contactInfo: {
-                    phone: {
-                        voice: $prov.find("ows|Phone ows|Voice").text(),
-                        facsimile: $prov.find("ows|Phone ows|Facsimile").text()
-                    },
-                    address: {
-                        deliveryPoint: $prov.find("ows|Address ows|DeliveryPoint").text(),
-                        city: $prov.find("ows|Address ows|City").text(),
-                        administrativeArea: $prov.find("ows|Address ows|AdministrativeArea").text(),
-                        postalCode: $prov.find("ows|Address ows|PostalCode").text(),
-                        country: $prov.find("ows|Address ows|Country").text(),
-                        electronicMailAddress: $prov.find("ows|Address ows|ElectronicMailAddress").text(),
-                    },
-                    onlineResource: $prov.find("ows|OnlineResource").attr("xlink:href"),
-                    hoursOfService: $prov.find("ows|HoursOfService").text(),
-                    contactInstructions:$prov.find("ows|ContactInstructions").text()
-                },
-                role: $prov.find("ows|Role").text()
-            },
-            serviceMetadata: { // TODO: not yet standardized
-                formatsSupported: $sm.find("wcs|formatSupported").textArray(),
-                crssSupported: $sm.find("wcs|CrsMetadata wcs|crsSupported").textArray()
-            },
-            operations: $.makeArray($node.find("ows|OperationsMetadata ows|Operation").map(function() {
-                var $op = $(this);
-                return {
-                    name: $op.attr("name"),
-                    getUrl: $op.find("ows|Post").attr("xlink:href"),
-                    postUrl: $op.find("ows|Get").attr("xlink:href")
-                };
-            })),
-            contents: {
-                coverages: $.makeArray($node.find("wcs|Contents wcs|CoverageSummary").map(function() {
-                    var $sum = $(this);
-                    return {
-                        coverageId: $sum.find("wcs|CoverageId").text(),
-                        coverageSubtype: $sum.find("wcs|CoverageSubtype").text()
-                    };
-                }))
-            }
-        };
-    },
 
     /**
      *  function WCS.Core.parseExceptionReport
@@ -518,18 +444,92 @@ WCS.Core.Parse = function() {
      * @returns: the parsed object
      */
 
-    parseExceptionReport: function($node) {
+    var parseExceptionReport = function($node) {
         var $exception = $node.find("ows|Exception");
         var parsed = {
-            code: $exception.attr("exceptionCode"),
-            locator: $exception.attr("locator"),
-            text: $exception.find("ows|ExceptionText").text()
+            "code": $exception.attr("exceptionCode"),
+            "locator": $exception.attr("locator"),
+            "text": $exception.find("ows|ExceptionText").text()
         };
-        if (WCS.Core.Parse.options.throwOnException) {
+        if (options.throwOnException) {
             throw new Exception(parsed.text);
         }
         else return parsed;
-    },
+    };
+
+    /**
+     *  function WCS.Core.parseCapabilities
+     *
+     * Parsing function for wcs:Capabilities elements.
+     *
+     * @param $node: the (jQuery) wrapped DOM object
+     *
+     * @returns: the parsed object
+     */
+
+    var parseCapabilities = function($node) {
+        var $id = $node.find("ows|ServiceIdentification");
+        var $prov = $node.find("ows|ServiceProvider");
+        var $sm = $node.find("wcs|ServiceMetadata");
+        
+        return {
+            "serviceIdentification": {
+                "title": $id.find("ows|Title").text(),
+                "abstract": $id.find("ows|Abstract").text(),
+                "keywords": $id.find("ows|Keyword").textArray(),
+                "serviceType": $id.find("ows|ServiceType").text(),
+                "serviceTypeVersion": $id.find("ows|ServiceTypeVersion").text(),
+                "profiles": $id.find("ows|Profile").textArray(),
+                "fees": $id.find("ows|Fees").text(),
+                "accessConstraints": $id.find("ows|AccessConstraints").text()
+            },
+            "serviceProvider": {
+                "providerName": $prov.find("ows|ProviderName").text(),
+                "providerSite": $prov.find("ows|ProviderSite").attr("xlink:href"),
+                "individualName": $prov.find("ows|IndividualName").text(),
+                "positionName": $prov.find("ows|PositionName").text(),
+                "contactInfo": {
+                    "phone": {
+                        "voice": $prov.find("ows|Phone ows|Voice").text(),
+                        "facsimile": $prov.find("ows|Phone ows|Facsimile").text()
+                    },
+                    "address": {
+                        "deliveryPoint": $prov.find("ows|Address ows|DeliveryPoint").text(),
+                        "city": $prov.find("ows|Address ows|City").text(),
+                        "administrativeArea": $prov.find("ows|Address ows|AdministrativeArea").text(),
+                        "postalCode": $prov.find("ows|Address ows|PostalCode").text(),
+                        "country": $prov.find("ows|Address ows|Country").text(),
+                        "electronicMailAddress": $prov.find("ows|Address ows|ElectronicMailAddress").text()
+                    },
+                    "onlineResource": $prov.find("ows|OnlineResource").attr("xlink:href"),
+                    "hoursOfService": $prov.find("ows|HoursOfService").text(),
+                    "contactInstructions": $prov.find("ows|ContactInstructions").text()
+                },
+                "role": $prov.find("ows|Role").text()
+            },
+            "serviceMetadata": { // TODO: not yet standardized
+                "formatsSupported": $sm.find("wcs|formatSupported").textArray(),
+                "crssSupported": $sm.find("crs|crsSupported").textArray()
+            },
+            "operations": $.makeArray($node.find("ows|OperationsMetadata ows|Operation").map(function() {
+                var $op = $(this);
+                return {
+                    "name": $op.attr("name"),
+                    "getUrl": $op.find("ows|Post").attr("xlink:href"),
+                    "postUrl": $op.find("ows|Get").attr("xlink:href")
+                };
+            })),
+            "contents": {
+                "coverages": $node.find("wcs|Contents wcs|CoverageSummary").map(function() {
+                    var $sum = $(this);
+                    return {
+                        "coverageId": $sum.find("wcs|CoverageId").text(),
+                        "coverageSubtype": $sum.find("wcs|CoverageSubtype").text()
+                    };
+                }).get()
+            }
+        };
+    };
 
     /**
      *  function WCS.Core.parseCoverageDescriptions
@@ -541,12 +541,12 @@ WCS.Core.Parse = function() {
      * @returns: the parsed object
      */
 
-    parseCoverageDescriptions: function($node) {
+    var parseCoverageDescriptions = function($node) {
         var descs = $node.find("wcs|CoverageDescription").map(function() {
             return WCS.Core.Parse.callParseFunctions(this.localName, $(this));
         }).get();
-        return {coverageDescriptions: descs};
-    },
+        return {"coverageDescriptions": descs};
+    };
 
     /**
      *  function WCS.Core.parseCoverageDescription
@@ -558,7 +558,7 @@ WCS.Core.Parse = function() {
      * @returns: the parsed object
      */
 
-    parseCoverageDescription: function($node) {
+    var parseCoverageDescription = function($node) {
         var $envelope = $node.find("gml|Envelope");
         var $domainSet = $node.find("gml|domainSet");
 
@@ -587,55 +587,69 @@ WCS.Core.Parse = function() {
             }
         }
         
-        return {
-            coverageId: $node.find("wcs|CoverageId").text(),
-            dimensions: parseInt($node.find("gml|RectifiedGrid").attr("dimension")),
-            bounds: {
-                projection: $envelope.attr("srsName"),
-                lower: WCS.Util.stringToFloatArray($envelope.find("gml|lowerCorner").text()),
-                upper: WCS.Util.stringToFloatArray($envelope.find("gml|upperCorner").text())
+        var obj = {
+            "coverageId": $node.find("wcs|CoverageId").text(),
+            "dimensions": parseInt($node.find("gml|RectifiedGrid").attr("dimension")),
+            "bounds": {
+                "projection": $envelope.attr("srsName"),
+                "lower": WCS.Util.stringToFloatArray($envelope.find("gml|lowerCorner").text()),
+                "upper": WCS.Util.stringToFloatArray($envelope.find("gml|upperCorner").text())
             },
-            envelope: {
-                low: low,
-                high: high
+            "envelope": {
+                "low": low,
+                "high": high
             },
-            size: size,
-            origin: WCS.Util.stringToFloatArray($domainSet.find("gml|pos").text()),
-            offsetVectors: offsetVectors,
-            resolution: resolution,
-            rangeType: $node.find("swe|field").map(function() {
+            "size": size,
+            "origin": WCS.Util.stringToFloatArray($domainSet.find("gml|pos").text()),
+            "offsetVectors": offsetVectors,
+            "resolution": resolution,
+            "rangeType": $node.find("swe|field").map(function() {
                 var $field = $(this);
                 return {
-                    name: $field.attr("name"),
-                    description: $field.find("swe|description").text(),
-                    uom: $field.find("swe|uom").attr("code"),
-                    nilValues: $field.find("swe|nilValue").map(function(){
+                    "name": $field.attr("name"),
+                    "description": $field.find("swe|description").text(),
+                    "uom": $field.find("swe|uom").attr("code"),
+                    "nilValues": $field.find("swe|nilValue").map(function(){
                         var $nilValue = $(this);
                         return {
-                            value: parseInt($nilValue.text()),
-                            reason: $nilValue.attr("reason")
+                            "value": parseInt($nilValue.text()),
+                            "reason": $nilValue.attr("reason")
                         }
                     }).get(),
-                    allowedValues: WCS.Util.stringToIntArray($field.find("swe|interval").text()),
-                    significantFigures: parseInt($field.find("swe|significantFigures").text())
+                    "allowedValues": WCS.Util.stringToIntArray($field.find("swe|interval").text()),
+                    "significantFigures": parseInt($field.find("swe|significantFigures").text())
                 };
             }).get(),
-            coverageSubtype: $node.find("wcs|CoverageSubtype").text(),
-            supportedCRSs: $node.find("wcs|supportedCRS").textArray(),
-            nativeCRS: $node.find("wcs|nativeCRS").text(),
-            supportedFormats: $node.find("wcs|supportedFormat").textArray()
+            "coverageSubtype": $node.find("wcs|CoverageSubtype").text(),
+            "supportedCRSs": $node.find("wcs|supportedCRS").textArray(),
+            "nativeCRS": $node.find("wcs|nativeCRS").text(),
+            "supportedFormats": $node.find("wcs|supportedFormat").textArray()
         };
+        
+        return obj;
+    };
+
+    /* Push core parsing functions */
+    pushParseFunctions({
+        "Capabilities": parseCapabilities,
+        "ExceptionReport": parseExceptionReport,
+        "CoverageDescriptions": parseCoverageDescriptions,
+        "CoverageDescription": parseCoverageDescription,
+        "RectifiedGridCoverage": parseCoverageDescription
+    });
+
+    /// public functions/objects
+    
+    var publicSymbols = {
+        "pushParseFunction": pushParseFunction,
+        "pushParseFunctions": pushParseFunctions,
+        "parse": parse,
+        "callParseFunctions": callParseFunctions,
+        "options": options
     }
+    
+    /// end public functions
 
-    } /// end public functions
-} ();
-
-/* Push core parsing functions */
-WCS.Core.Parse.pushParseFunctions({
-    "Capabilities": WCS.Core.Parse.parseCapabilities,
-    "ExceptionReport": WCS.Core.Parse.parseExceptionReport,
-    "CoverageDescriptions": WCS.Core.Parse.parseCoverageDescriptions,
-    "CoverageDescription": WCS.Core.Parse.parseCoverageDescription,
-    "RectifiedGridCoverage": WCS.Core.Parse.parseCoverageDescription,
-});
-
+    return publicSymbols;
+    
+}) ();

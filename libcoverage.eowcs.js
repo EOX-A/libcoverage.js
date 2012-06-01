@@ -112,8 +112,8 @@ WCS.EO.Parse = function() {
         );
 
         return {
-            coverageDescriptions: cdescs.coverageDescriptions,
-            datasetSeriesDescriptions: dssdescs.datasetSeriesDescriptions
+            "coverageDescriptions": cdescs.coverageDescriptions,
+            "datasetSeriesDescriptions": dssdescs.datasetSeriesDescriptions
         };
     },
 
@@ -131,12 +131,12 @@ WCS.EO.Parse = function() {
 
     parseExtendedCapabilities: function($node) {
         return {
-            contents: {
-                datasetSeries: $.makeArray($node.find("wcs|Contents wcseo|DatasetSeriesSummary").map(function() {
+            "contents": {
+                "datasetSeries": $.makeArray($node.find("wcs|Contents wcseo|DatasetSeriesSummary").map(function() {
                     var $sum = $(this);
                     return {
-                        datasetSeriesId: $sum.find("wcseo|DatasetSeriesId").text(),
-                        timePeriod: [
+                        "datasetSeriesId": $sum.find("wcseo|DatasetSeriesId").text(),
+                        "timePeriod": [
                             new Date($sum.find("gml|beginPosition").text()),
                             new Date($sum.find("gml|endPosition").text())
                         ]
@@ -151,10 +151,10 @@ WCS.EO.Parse = function() {
         if ($eoMetadata.size() == 1) {
             $phenomenonTime = $eoMetadata.find("om|phenomenonTime");
             return {
-                footprint: $.map($eoMetadata.find("om|featureOfInterest gml|posList").text().split(" "), function(val) {
+                "footprint": $.map($eoMetadata.find("om|featureOfInterest gml|posList").text().split(" "), function(val) {
                     return parseFloat(val);
                 }),
-                timePeriod: [
+                "timePeriod": [
                     new Date($phenomenonTime.find("gml|beginPosition").text()),
                     new Date($phenomenonTime.find("gml|endPosition").text())
                 ]
