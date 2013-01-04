@@ -59,7 +59,7 @@ WCS.Util = function() {
 
     stringToIntArray: function(string, separator) {
         separator = separator || " ";
-        return $.map(string.split(separator), function(val) {
+        return WCS.Util.map(string.split(separator), function(val) {
             return parseInt(val);
         });
     },
@@ -78,9 +78,50 @@ WCS.Util = function() {
 
     stringToFloatArray: function(string, separator) {
         separator = separator || " ";
-        return $.map(string.split(separator), function(val) {
+        return WCS.Util.map(string.split(separator), function(val) {
             return parseFloat(val);
         });
+    },
+
+    getFirst: function(node, ns, tagName) {
+        if (!tagName) return node;
+        if (ns)
+            return node.getElementsByTagNameNS(ns, tagName)[0];
+        else
+            return node.getElementsByTagName(tagName)[0];
+    },
+
+    getText: function(node, ns, tagName, defaultValue) {
+        var first = WCS.Util.getFirst(node, ns, tagName);
+        if (first)
+            return first.textContent;
+        else
+            return defaultValue
+    },
+
+    getAll: function(node, ns, tagName) {
+        if (!tagName) return [node];
+        if (ns)
+            return node.getElementsByTagNameNS(ns, tagName);
+        else
+            return node.getElementsByTagName(tagName);
+    },
+
+    getTextArray: function(node, ns, tagName) {
+        var texts = [];
+        var nodes = WCS.Util.getAll(node, ns, tagName);
+        for (var i = 0; i < nodes.length; ++i) {
+            texts.push(nodes[i].textContent);
+        }
+        return texts;
+    },
+
+    map: function (array, iterator) {
+        var result = [];
+        for (var i = 0; i < array.length; ++i) {
+            result.push(iterator(array[i]));
+        }
+        return result;
     },
 
     /**
@@ -289,25 +330,23 @@ WCS.Core.KVP = function() {
 
 WCS.Core.Parse = (function() {
 
-    /// extend jQuery
-
-    (function( $ ) {
-        /**
-         *  jQuery plugin textArray
-         *
-         * This jQuery plugin allows the selection of text from multiple
-         * elements and returns them as array.
-         */
-        $.fn.textArray = function() {
-            return this.map(function() {
-                return $(this).text()
-            }).get();
-        };
-    })( jQuery );
-    
-    ///
-
     /// begin private fields
+
+    var parseXml;
+
+    if (typeof window.DOMParser != "undefined") {
+        parseXml = function(xmlStr) {
+            return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
+        };
+    } else if (typeof window.ActiveXObject != "undefined" &&
+           new window.ActiveXObject("Microsoft.XMLDOM")) {
+        parseXml = function(xmlStr) {
+            var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
+            xmlDoc.async = "false";
+            xmlDoc.loadXML(xmlStr);
+            return xmlDoc;
+        };
+    }
 
     /**
      *  object WCS.Core.parseFunctions (private)
@@ -320,13 +359,16 @@ WCS.Core.Parse = (function() {
     var parseFunctions = {};
 
     /* setup global namespace declarations */
-    $.xmlns["xlink"] = "http://www.w3.org/1999/xlink";
-    $.xmlns["ows"] = "http://www.opengis.net/ows/2.0";
-    $.xmlns["wcs"] = "http://www.opengis.net/wcs/2.0";
-    $.xmlns["gml"] = "http://www.opengis.net/gml/3.2";
-    $.xmlns["gmlcov"] = "http://www.opengis.net/gmlcov/1.0";
-    $.xmlns["swe"] = "http://www.opengis.net/swe/2.0";
-    $.xmlns["crs"] = "http://www.opengis.net/wcs/service-extension/crs/1.0";
+
+    var ns = {
+        xlink: "http://www.w3.org/1999/xlink",
+        ows: "http://www.opengis.net/ows/2.0",
+        wcs: "http://www.opengis.net/wcs/2.0",
+        gml: "http://www.opengis.net/gml/3.2",
+        gmlcov: "http://www.opengis.net/gmlcov/1.0",
+        swe: "http://www.opengis.net/swe/2.0",
+        crs: "http://www.opengis.net/wcs/service-extension/crs/1.0"
+    }
 
     /// end private fields
 
@@ -339,7 +381,7 @@ WCS.Core.Parse = (function() {
      * @param tagName: the tagName the function is registered to
      *
      * @param parseFunction: the function to be executed. The function shall
-     *                       receive the tag name and a (jQuery) wrapped DOM object
+     *                       receive the tag name and a wrapped DOM object
      *                       as parameters and shall return an object of all parsed
      *                       attributes. For extension parsing functions only
      *                       extensive properties shall be parsed.
@@ -378,17 +420,17 @@ WCS.Core.Parse = (function() {
      *
      * @param tagName: the tagName of the node to be parsed
      *
-     * @param $node: the (jQuery) wrapped DOM object
+     * @param node: the (jQuery) wrapped DOM object
      *
      * @return: the merged object of all parsing results
      */
 
-    var callParseFunctions = function(tagName, $node) {
+    var callParseFunctions = function(tagName, node) {
         if (parseFunctions.hasOwnProperty(tagName)) {
             var funcs = parseFunctions[tagName],
                 endResult = {};
             for (var i = 0; i < funcs.length; ++i) {
-                var result = funcs[i]($node);
+                var result = funcs[i](node);
                 WCS.Util.deepMerge(endResult, result);
             }
             return endResult;
@@ -411,6 +453,14 @@ WCS.Core.Parse = (function() {
         throwOnException: false
     };
 
+
+    var getFirst = WCS.Util.getFirst,
+        getText = WCS.Util.getText,
+        getAll = WCS.Util.getAll,
+        getTextArray = WCS.Util.getTextArray,
+        map = WCS.Util.map;
+
+
     /**
      *  function WCS.Core.parse
      *
@@ -427,10 +477,10 @@ WCS.Core.Parse = (function() {
     var parse = function(xml) {
         var root;
         if (typeof xml === "string")
-            root = $.parseXML(xml).documentElement;
+            root = parseXml(xml).documentElement;
         else
             root = xml.documentElement;
-        return WCS.Core.Parse.callParseFunctions(root.localName, $(root));
+        return WCS.Core.Parse.callParseFunctions(root.localName, root);
     };
 
 
@@ -439,17 +489,17 @@ WCS.Core.Parse = (function() {
      *
      * Parsing function for ows:ExceptionReport elements.
      *
-     * @param $node: the (jQuery) wrapped DOM object
+     * @param node: the (jQuery) wrapped DOM object
      *
      * @returns: the parsed object
      */
 
-    var parseExceptionReport = function($node) {
-        var $exception = $node.find("ows|Exception");
+    var parseExceptionReport = function(node) {
+        var exception = getFirst(node, ns.ows, "Exception");
         var parsed = {
-            "code": $exception.attr("exceptionCode"),
-            "locator": $exception.attr("locator"),
-            "text": $exception.find("ows|ExceptionText").text()
+            "code": exception.getAttribute("exceptionCode"),
+            "locator": exception.getAttribute("locator"),
+            "text": getText(exception, ns.ows, "ExceptionText")
         };
         if (options.throwOnException) {
             throw new Exception(parsed.text);
@@ -462,71 +512,71 @@ WCS.Core.Parse = (function() {
      *
      * Parsing function for wcs:Capabilities elements.
      *
-     * @param $node: the (jQuery) wrapped DOM object
+     * @param node: the (jQuery) wrapped DOM object
      *
      * @returns: the parsed object
      */
 
-    var parseCapabilities = function($node) {
-        var $id = $node.find("ows|ServiceIdentification");
-        var $prov = $node.find("ows|ServiceProvider");
-        var $sm = $node.find("wcs|ServiceMetadata");
+    var parseCapabilities = function(node) {
+        var id = getFirst(node, ns.ows, "ServiceIdentification");
+        var prov = getFirst(node, ns.ows, "ServiceProvider");
+        var sm = getFirst(node, ns.wcs, "ServiceMetadata");
+        var phone = getFirst(prov, ns.ows, "Phone");
+        var address = getFirst(prov, ns.ows, "Address");
         
         return {
             "serviceIdentification": {
-                "title": $id.find("ows|Title").text(),
-                "abstract": $id.find("ows|Abstract").text(),
-                "keywords": $id.find("ows|Keyword").textArray(),
-                "serviceType": $id.find("ows|ServiceType").text(),
-                "serviceTypeVersion": $id.find("ows|ServiceTypeVersion").text(),
-                "profiles": $id.find("ows|Profile").textArray(),
-                "fees": $id.find("ows|Fees").text(),
-                "accessConstraints": $id.find("ows|AccessConstraints").text()
+                "title": getText(id, ns.ows, "Title"),
+                "abstract": getText(id, ns.ows, "Abstract"),
+                "keywords": getTextArray(id, ns.ows, "Keyword"),
+                "serviceType": getText(id, ns.ows, "ServiceType"),
+                "serviceTypeVersion": getText(id, ns.ows, "ServiceTypeVersion"),
+                "profiles": getTextArray(id, ns.ows, "Profile"),
+                "fees": getText(id, ns.ows, "Fees"),
+                "accessConstraints": getText(id, ns.ows, "AccessConstraints")
             },
             "serviceProvider": {
-                "providerName": $prov.find("ows|ProviderName").text(),
-                "providerSite": $prov.find("ows|ProviderSite").attr("xlink:href"),
-                "individualName": $prov.find("ows|IndividualName").text(),
-                "positionName": $prov.find("ows|PositionName").text(),
+                "providerName": getText(prov, ns.ows, "ProviderName"),
+                "providerSite": getFirst(prov, ns.ows, "ProviderSite").getAttributeNS(ns.xlink, "href"),
+                "individualName": getText(prov, ns.ows, "IndividualName"),
+                "positionName": getText(prov, ns.ows, "PositionName"),
                 "contactInfo": {
                     "phone": {
-                        "voice": $prov.find("ows|Phone ows|Voice").text(),
-                        "facsimile": $prov.find("ows|Phone ows|Facsimile").text()
+                        "voice": getText(phone, ns.ows, "Voice"),
+                        "facsimile": getText(phone, ns.ows, "Facsimile")
                     },
                     "address": {
-                        "deliveryPoint": $prov.find("ows|Address ows|DeliveryPoint").text(),
-                        "city": $prov.find("ows|Address ows|City").text(),
-                        "administrativeArea": $prov.find("ows|Address ows|AdministrativeArea").text(),
-                        "postalCode": $prov.find("ows|Address ows|PostalCode").text(),
-                        "country": $prov.find("ows|Address ows|Country").text(),
-                        "electronicMailAddress": $prov.find("ows|Address ows|ElectronicMailAddress").text()
+                        "deliveryPoint": getText(address, ns.ows, "DeliveryPoint"),
+                        "city": getText(address, ns.ows, "City"),
+                        "administrativeArea": getText(address, ns.ows, "AdministrativeArea"),
+                        "postalCode": getText(address, ns.ows, "PostalCode"),
+                        "country": getText(address, ns.ows, "Country"),
+                        "electronicMailAddress": getText(address, ns.ows, "ElectronicMailAddress")
                     },
-                    "onlineResource": $prov.find("ows|OnlineResource").attr("xlink:href"),
-                    "hoursOfService": $prov.find("ows|HoursOfService").text(),
-                    "contactInstructions": $prov.find("ows|ContactInstructions").text()
+                    "onlineResource": getFirst(prov, ns.ows, "OnlineResource").getAttributeNS(ns.xlink, "href"),
+                    "hoursOfService": getText(prov, ns.ows, "HoursOfService"),
+                    "contactInstructions": getText(prov, ns.ows, "ContactInstructions")
                 },
-                "role": $prov.find("ows|Role").text()
+                "role": getText(prov, ns.ows, "Role")
             },
             "serviceMetadata": { // TODO: not yet standardized
-                "formatsSupported": $sm.find("wcs|formatSupported").textArray(),
-                "crssSupported": $sm.find("crs|crsSupported").textArray()
+                "formatsSupported": getTextArray(sm, ns.wcs, "formatSupported"),
+                "crssSupported": getTextArray(sm, ns.crs, "crsSupported")
             },
-            "operations": $.makeArray($node.find("ows|OperationsMetadata ows|Operation").map(function() {
-                var $op = $(this);
+            "operations": map(getAll(node, ns.ows, "Operation"), function(op) {
                 return {
-                    "name": $op.attr("name"),
-                    "getUrl": $op.find("ows|Post").attr("xlink:href"),
-                    "postUrl": $op.find("ows|Get").attr("xlink:href")
+                    "name": op.getAttribute("name"),
+                    "getUrl": getFirst(op, ns.ows, "Post").getAttributeNS(ns.xlink, "href"),
+                    "postUrl": getFirst(op, ns.ows, "Get").getAttributeNS(ns.xlink, "href")
                 };
-            })),
+            }),
             "contents": {
-                "coverages": $node.find("wcs|Contents wcs|CoverageSummary").map(function() {
-                    var $sum = $(this);
+                "coverages": map(getAll(node, ns.wcs, "CoverageSummary"), function(sum) {
                     return {
-                        "coverageId": $sum.find("wcs|CoverageId").text(),
-                        "coverageSubtype": $sum.find("wcs|CoverageSubtype").text()
+                        "coverageId": getText(sum, ns.wcs, "CoverageId"),
+                        "coverageSubtype": getText(sum, ns.wcs, "CoverageSubtype")
                     };
-                }).get()
+                })
             }
         };
     };
@@ -536,15 +586,15 @@ WCS.Core.Parse = (function() {
      *
      * Parsing function for wcs:CoverageDescriptions elements.
      *
-     * @param $node: the (jQuery) wrapped DOM object
+     * @param node: the (jQuery) wrapped DOM object
      *
      * @returns: the parsed object
      */
 
-    var parseCoverageDescriptions = function($node) {
-        var descs = $node.find("wcs|CoverageDescription").map(function() {
-            return WCS.Core.Parse.callParseFunctions(this.localName, $(this));
-        }).get();
+    var parseCoverageDescriptions = function(node) {
+        var descs = map(getAll(node, ns.wcs, "CoverageDescription"), function(desc) {
+            return WCS.Core.Parse.callParseFunctions(desc.localName, desc);
+        });
         return {"coverageDescriptions": descs};
     };
 
@@ -553,26 +603,25 @@ WCS.Core.Parse = (function() {
      *
      * Parsing function for wcs:CoverageDescription elements.
      *
-     * @param $node: the (jQuery) wrapped DOM object
+     * @param node: the (jQuery) wrapped DOM object
      *
      * @returns: the parsed object
      */
 
-    var parseCoverageDescription = function($node) {
-        var $envelope = $node.find("gml|Envelope");
-        var $domainSet = $node.find("gml|domainSet");
+    var parseCoverageDescription = function(node) {
+        var envelope = getFirst(node, ns.gml, "Envelope");
+        var domainSet = getFirst(node, ns.gml, "domainSet");
 
-        var low = WCS.Util.stringToIntArray($domainSet.find("gml|low").text()),
-            high = WCS.Util.stringToIntArray($domainSet.find("gml|high").text());
+        var low = WCS.Util.stringToIntArray(getText(domainSet, ns.gml, "low")),
+            high = WCS.Util.stringToIntArray(getText(domainSet, ns.gml, "high"));
         
         var size = [];
         for (var i = 0; i < Math.min(low.length, high.length); ++i) {
             size.push(high[i] + 1 - low[i]);
         }
 
-        var offsetVectors = [];
-        $domainSet.find("gml|offsetVector").each(function() {
-            offsetVectors.push(WCS.Util.stringToFloatArray($(this).text()));
+        var offsetVectors = map(getAll(domainSet, ns.gml, "offsetVector"), function(offsetVector) {
+            return WCS.Util.stringToFloatArray(getText(offsetVector));
         });
 
         // simplified resolution interface. does not make sense for not axis 
@@ -588,42 +637,40 @@ WCS.Core.Parse = (function() {
         }
         
         var obj = {
-            "coverageId": $node.find("wcs|CoverageId").text(),
-            "dimensions": parseInt($node.find("gml|RectifiedGrid").attr("dimension")),
+            "coverageId": getText(node, ns.wcs, "CoverageId"),
+            "dimensions": parseInt(getFirst(node, ns.gml, "RectifiedGrid").getAttribute("dimension")),
             "bounds": {
-                "projection": $envelope.attr("srsName"),
-                "lower": WCS.Util.stringToFloatArray($envelope.find("gml|lowerCorner").text()),
-                "upper": WCS.Util.stringToFloatArray($envelope.find("gml|upperCorner").text())
+                "projection": envelope.getAttribute("srsName"),
+                "lower": WCS.Util.stringToFloatArray(getText(envelope, ns.gml, "lowerCorner")),
+                "upper": WCS.Util.stringToFloatArray(getText(envelope, ns.gml, "upperCorner"))
             },
             "envelope": {
                 "low": low,
                 "high": high
             },
             "size": size,
-            "origin": WCS.Util.stringToFloatArray($domainSet.find("gml|pos").text()),
+            "origin": WCS.Util.stringToFloatArray(getText(domainSet, ns.gml, "pos")),
             "offsetVectors": offsetVectors,
             "resolution": resolution,
-            "rangeType": $node.find("swe|field").map(function() {
-                var $field = $(this);
+            "rangeType": map(getAll(node, ns.swe, "field"), function(field) {
                 return {
-                    "name": $field.attr("name"),
-                    "description": $field.find("swe|description").text(),
-                    "uom": $field.find("swe|uom").attr("code"),
-                    "nilValues": $field.find("swe|nilValue").map(function(){
-                        var $nilValue = $(this);
+                    "name": field.getAttribute("name"),
+                    "description": getText(field, ns.swe, "description"),
+                    "uom": getFirst(field, ns.swe, "uom").getAttribute("code"),
+                    "nilValues": map(getAll(field, ns.swe, "nilValue"), function(nilValue) {
                         return {
-                            "value": parseInt($nilValue.text()),
-                            "reason": $nilValue.attr("reason")
+                            "value": parseInt(nilValue.textContent),
+                            "reason": nilValue.getAttribute("reason")
                         }
-                    }).get(),
-                    "allowedValues": WCS.Util.stringToIntArray($field.find("swe|interval").text()),
-                    "significantFigures": parseInt($field.find("swe|significantFigures").text())
+                    }),
+                    "allowedValues": WCS.Util.stringToIntArray(getText(field, ns.swe, "interval")),
+                    "significantFigures": parseInt(getText(field, ns.swe, "significantFigures"))
                 };
-            }).get(),
-            "coverageSubtype": $node.find("wcs|CoverageSubtype").text(),
-            "supportedCRSs": $node.find("wcs|supportedCRS").textArray(),
-            "nativeCRS": $node.find("wcs|nativeCRS").text(),
-            "supportedFormats": $node.find("wcs|supportedFormat").textArray()
+            }),
+            "coverageSubtype": getText(node, ns.wcs, "CoverageSubtype"),
+            "supportedCRSs": getTextArray(node, ns.wcs, "supportedCRS"),
+            "nativeCRS": getText(node, ns.wcs, "nativeCRS"),
+            "supportedFormats": getTextArray(node, ns.wcs, "supportedFormat")
         };
         
         return obj;

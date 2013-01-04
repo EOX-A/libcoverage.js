@@ -94,21 +94,31 @@ WCS.EO.Parse = function() {
 
     /// begin private fields
 
-    $.xmlns["eop"] = "http://www.opengis.net/eop/2.0";
-    $.xmlns["wcseo"] = "http://www.opengis.net/wcseo/1.0";
-    $.xmlns["om"] = "http://www.opengis.net/om/2.0";
+    var ns = {
+        wcs: "http://www.opengis.net/wcs/2.0",
+        gml: "http://www.opengis.net/gml/3.2",
+        eop: "http://www.opengis.net/eop/2.0",
+        wcseo: "http://www.opengis.net/wcseo/1.0",
+        om: "http://www.opengis.net/om/2.0"
+    }
+
+    var getFirst = WCS.Util.getFirst,
+        getText = WCS.Util.getText,
+        getAll = WCS.Util.getAll,
+        getTextArray = WCS.Util.getTextArray,
+        map = WCS.Util.map;
 
     /// end private fields
 
     return { /// begin public functions
     
-    parseEOCoverageSetDescription: function($node) {
+    parseEOCoverageSetDescription: function(node) {
         var cdescs = WCS.Core.Parse.callParseFunctions(
-            "CoverageDescriptions", $node.find("wcs|CoverageDescriptions")
+            "CoverageDescriptions", getFirst(node, ns.wcs, "CoverageDescriptions")
         );
 
         var dssdescs = WCS.Core.Parse.callParseFunctions(
-            "DatasetSeriesDescriptions", $node.find("wcseo|DatasetSeriesDescriptions")
+            "DatasetSeriesDescriptions", getFirst(node, ns.wcseo, "DatasetSeriesDescriptions")
         );
 
         return {
@@ -117,46 +127,44 @@ WCS.EO.Parse = function() {
         };
     },
 
-    parseDatasetSeriesDescriptions: function($node) {
-        var descs = $.makeArray($node.find("wcseo|DatasetSeriesDescription").map(function() {
-            return WCS.Core.Parse.callParseFunctions("DatasetSeriesDescription", $(this));
-        }));
+    parseDatasetSeriesDescriptions: function(node) {
+        var descs = map(getAll(node, ns.wcseo, "DatasetSeriesDescription"), function(datasetSeriesDescription) {
+            return WCS.Core.Parse.callParseFunctions("DatasetSeriesDescription", datasetSeriesDescription);
+        });
 
         return {datasetSeriesDescriptions: descs};
     },
 
-    parseDatasetSeriesDescription: function($node) {
+    parseDatasetSeriesDescription: function(node) {
         return {}; // TODO: implement
     },
 
-    parseExtendedCapabilities: function($node) {
+    parseExtendedCapabilities: function(node) {
         return {
             "contents": {
-                "datasetSeries": $.makeArray($node.find("wcs|Contents wcseo|DatasetSeriesSummary").map(function() {
-                    var $sum = $(this);
+                "datasetSeries": map(getAll(node, ns.wcseo, "DatasetSeriesSummary"), function(sum) {
                     return {
-                        "datasetSeriesId": $sum.find("wcseo|DatasetSeriesId").text(),
+                        "datasetSeriesId": getText(sum, ns.wcseo, "DatasetSeriesId"),
                         "timePeriod": [
-                            new Date($sum.find("gml|beginPosition").text()),
-                            new Date($sum.find("gml|endPosition").text())
+                            new Date(getText(sum, ns.gml, "beginPosition")),
+                            new Date(getText(sum, ns.gml, "endPosition"))
                         ]
                     };
-                }))
+                })
             }
-        }
+        };
     },
 
-    parseExtendedCoverageDescription: function($node) {
-        $eoMetadata = $node.find("wcseo|EOMetadata");
-        if ($eoMetadata.size() == 1) {
-            $phenomenonTime = $eoMetadata.find("om|phenomenonTime");
+    parseExtendedCoverageDescription: function(node) {
+        var eoMetadata = getFirst(node, ns.wcseo, "EOMetadata");
+        if (eoMetadata) {
+            var phenomenonTime = getFirst(eoMetadata, ns.om, "phenomenonTime");
+            var featureOfInterest = getFirst(eoMetadata, ns.om, "featureOfInterest");
             return {
-                "footprint": $.map($eoMetadata.find("om|featureOfInterest gml|posList").text().split(" "), function(val) {
-                    return parseFloat(val);
-                }),
+                "footprint": WCS.Util.stringToFloatArray(getText(featureOfInterest, ns.gml, "posList")),
                 "timePeriod": [
-                    new Date($phenomenonTime.find("gml|beginPosition").text()),
-                    new Date($phenomenonTime.find("gml|endPosition").text())
+                    new Date(getText(phenomenonTime, ns.gml, "beginPosition")),
+                    new Date(getText(phenomenonTime, ns.gml, "endPosition"))
                 ]
             };
         }
