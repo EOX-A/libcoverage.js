@@ -113,13 +113,15 @@ WCS.EO.Parse = function() {
     return { /// begin public functions
     
     parseEOCoverageSetDescription: function(node) {
-        var cdescs = WCS.Core.Parse.callParseFunctions(
-            "CoverageDescriptions", getFirst(node, ns.wcs, "CoverageDescriptions")
-        );
+        var covDescriptions = getFirst(node, ns.wcs, "CoverageDescriptions");
+        var cdescs = covDescriptions ? WCS.Core.Parse.callParseFunctions(
+            "CoverageDescriptions", covDescriptions
+        ) : [];
 
-        var dssdescs = WCS.Core.Parse.callParseFunctions(
-            "DatasetSeriesDescriptions", getFirst(node, ns.wcseo, "DatasetSeriesDescriptions")
-        );
+        var dssDescriptions = getFirst(node, ns.wcseo, "DatasetSeriesDescriptions");
+        var dssdescs = (dssDescriptions) ? WCS.Core.Parse.callParseFunctions(
+            "DatasetSeriesDescriptions", dssDescriptions
+        ) : [];
 
         return {
             "coverageDescriptions": cdescs.coverageDescriptions,
