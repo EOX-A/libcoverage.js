@@ -11,21 +11,15 @@ returned from a WCS service.
 
 Dependencies:
 
-  - jQuery: for parsing XML documents to JavaScript objects. **Attention:**
-    It must be capable of namespace-aware selecting XML elements using the CSS
-    namespace rules (e.g: ```$node.find("wcs|ServiceMetadata");```).
-    A good implementation for namespace aware selecting can be found `here
-    <www.rfk.id.au/blog/entry/xmlns-selectors-jquery/>`_. 
+  - libcoverage.js does not have any further dependency but relies on the
+    function ``getElementsByTagNameNS``, and thus needs a browser that correctly
+    supports it.
 
 Drawbacks:
 
   - Libcoverage.js does *not* send and receive requests of any kind. This was
     designed with the intention to maximize compatibility with other DOM/ajax
-    libraries. Since jQuery is already a dependency, the included
-    `ajax function <http://api.jquery.com/jQuery.ajax/>`_ can be used to
-    dispatch the generated requests and react to the responses. Otherwise, the
-    `XMLHttpRequest <http://www.w3.org/TR/XMLHttpRequest/>`_ method is also
-    possible.
+    libraries.
 
   - Responses can only be parsed in a general way with the
     ``WCS.Core.Parse.parse`` function.
