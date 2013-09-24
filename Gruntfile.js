@@ -16,6 +16,7 @@ module.exports = function(grunt) {
             compile: {
                 files: {
                     'build/libcoverage.min.js': ['libcoverage.eowcs.js', 'libcoverage.wcs.js'],
+                    'build/libcoverage.backbone.min.js': ['integrations/libcoverage.backbone.js']
                 }
             }
         },
