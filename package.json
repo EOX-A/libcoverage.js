@@ -1,0 +1,30 @@
+{
+  "name": "libcoverage.js",
+  "version": "0.1.0",
+  "description": "A WCS (Web Coverage Service) client library for JavaScript.",
+  "homepage": "https://github.com/EOX-A/libcoverage.js",
+  "author": {
+    "name": "Fabian Schindler",
+    "email": "fabian.schindler@eox.at"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:EOX-A/libcoverage.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EOX-A/libcoverage.js/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/EOX-A/libcoverage.js/blob/master/LICENSE"
+    }
+  ],
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-bump": "~0.0.11",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-compress": "~0.5.2"
+  }
+}
