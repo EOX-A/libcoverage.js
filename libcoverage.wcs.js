@@ -635,10 +635,14 @@ WCS.Core.Parse = (function() {
                 continue;
             }
         }
+
+        // get the grid, either rectified or referenceable
+        var grid = getFirst(node, ns.gml, "RectifiedGrid");
+        if (!grid) grid = getFirst(node, ns.gml, "ReferenceableGrid");
         
         var obj = {
             "coverageId": getText(node, ns.wcs, "CoverageId"),
-            "dimensions": parseInt(getFirst(node, ns.gml, "RectifiedGrid").getAttribute("dimension")),
+            "dimensions": parseInt(grid.getAttribute("dimension")),
             "bounds": {
                 "projection": envelope.getAttribute("srsName"),
                 "lower": WCS.Util.stringToFloatArray(getText(envelope, ns.gml, "lowerCorner")),
