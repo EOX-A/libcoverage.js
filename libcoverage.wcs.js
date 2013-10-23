@@ -620,6 +620,10 @@ WCS.Core.Parse = (function() {
             size.push(high[i] + 1 - low[i]);
         }
 
+        var pos = getText(domainSet, ns.gml, "pos")
+        if (pos) {
+            var origin = WCS.Util.stringToFloatArray(pos);
+        }
         var offsetVectors = map(getAll(domainSet, ns.gml, "offsetVector"), function(offsetVector) {
             return WCS.Util.stringToFloatArray(getText(offsetVector));
         });
@@ -653,7 +657,7 @@ WCS.Core.Parse = (function() {
                 "high": high
             },
             "size": size,
-            "origin": WCS.Util.stringToFloatArray(getText(domainSet, ns.gml, "pos")),
+            "origin": origin,
             "offsetVectors": offsetVectors,
             "resolution": resolution,
             "rangeType": map(getAll(node, ns.swe, "field"), function(field) {
