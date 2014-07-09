@@ -48,7 +48,6 @@ WCS.EO.KVP = function() {
         }
         options = options || {};
         extraParams = extraParams || {};
-        subsetCRS = options.subsetCRS || "http://www.opengis.net/def/crs/EPSG/0/4326"; // TODO: change this
         
         var params = ['service=wcs', 'version=2.0.0', 'request=describeeocoverageset', 'eoid=' + eoid];
         
@@ -57,10 +56,10 @@ WCS.EO.KVP = function() {
             options.subsetY = [options.bbox[1], options.bbox[3]];
         }
         if (options.subsetX) {
-            params.push('subset=x,' + subsetCRS + '(' + options.subsetX[0] + ',' + options.subsetX[1] + ')');
+            params.push('subset=x(' + options.subsetX[0] + ',' + options.subsetX[1] + ')');
         }
         if (options.subsetY) {
-            params.push('subset=y,' + subsetCRS + '(' + options.subsetY[0] + ',' + options.subsetY[1] + ')');
+            params.push('subset=y(' + options.subsetY[0] + ',' + options.subsetY[1] + ')');
         }
         
         if (options.subsetTime) {

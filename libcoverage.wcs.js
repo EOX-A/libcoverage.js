@@ -281,29 +281,32 @@ WCS.Core.KVP = function() {
             options.subsetY = [options.bbox[1], options.bbox[3]];
         }
         if (options.subsetX)
-            params.push("subset=x," + subsetCRS + "(" + options.subsetX[0] + ","
+            params.push("subset=x(" + options.subsetX[0] + ","
                         + options.subsetX[1] + ")");
         if (options.subsetY)
-            params.push("subset=y," + subsetCRS + "(" + options.subsetY[0] + ","
+            params.push("subset=y(" + options.subsetY[0] + ","
                         + options.subsetY[1] + ")");
+        if (options.subsetCRS)
+            params.push("subsettingCrs=" + subsetCRS)
         if (options.size && !options.sizeX && !options.sizeY) {
             options.sizeX = options.size[0];
             options.sizeY = options.size[1];
         }
+
+        var sizes = [];
         if (options.sizeX)
-            params.push("size=x(" + options.sizeX + ")");
+            sizes.push("x(" + options.sizeX + ")");
         if (options.sizeY)
-            params.push("size=y(" + options.sizeY + ")");
+            sizes.push("y(" + options.sizeY + ")");
+        if (sizes.length > 0)
+            params.push("scalesize=" + sizes.join(","))
+
         if (options.resolution && !options.resolutionX && !options.resolutionY) {
             options.resolutionX = options.resolution[0];
             options.resolutionY = options.resolution[1];
         }
         if (options.rangeSubset)
             params.push("rangesubset=" + options.rangeSubset.join(","));
-        if (options.resolutionX)
-            params.push("resolution=x(" + options.resolutionX + ")");
-        if (options.resolutionY)
-            params.push("resolution=y(" + options.resolutionY + ")");
         if (options.interpolation)
             params.push("interpolation=" + options.interpolation);
         if (options.outputCRS)
@@ -367,7 +370,7 @@ WCS.Core.Parse = (function() {
         gml: "http://www.opengis.net/gml/3.2",
         gmlcov: "http://www.opengis.net/gmlcov/1.0",
         swe: "http://www.opengis.net/swe/2.0",
-        crs: "http://www.opengis.net/wcs/service-extension/crs/1.0"
+        crs: "http://www.opengis.net/wcs/crs/1.0"
     }
 
     /// end private fields
