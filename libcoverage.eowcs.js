@@ -172,20 +172,20 @@ WCS.EO.Parse = function() {
     },
 
     parseDatasetSeriesDescription: function(node) {
-        return {}; // TODO: implement
+        return {
+            "datasetSeriesId": xPath(node, "wcseo:DatasetSeriesId/text()|wcseoold:DatasetSeriesId/text()"),
+            "timePeriod": [
+                new Date(xPath(node, "gml:TimePeriod/gml:beginPosition/text()")),
+                new Date(xPath(node, "gml:TimePeriod/gml:endPosition/text()"))
+            ]
+        };
     },
 
     parseExtendedCapabilities: function(node) {
         return {
             "contents": {
                 "datasetSeries": map(xPathArray(node, "wcs:Contents/wcs:Extension/wcseo:DatasetSeriesSummary|wcs:Contents/wcs:Extension/wcseoold:DatasetSeriesSummary"), function(sum) {
-                    return {
-                        "datasetSeriesId": xPath(sum, "wcseo:DatasetSeriesId/text()|wcseoold:DatasetSeriesId/text()"),
-                        "timePeriod": [
-                            new Date(xPath(sum, "gml:TimePeriod/gml:beginPosition/text()")),
-                            new Date(xPath(sum, "gml:TimePeriod/gml:endPosition/text()"))
-                        ]
-                    };
+                  return WCS.Core.Parse.callParseFunctions("DatasetSeriesDescription", sum);
                 })
             }
         };
