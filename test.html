@@ -1,9 +1,10 @@
 <html>
 <head>
-    <link rel="stylesheet" href="http://code.jquery.com/qunit/git/qunit.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.20.0.css" type="text/css" media="screen" />
     <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
-    <script type="text/javascript" src="http://www.rfk.id.au/static/scratch/jquery.xmlns.js"></script>
-    <script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js"></script>
+    <!--<script type="text/javascript" src="http://www.rfk.id.au/static/scratch/jquery.xmlns.js"></script>-->
+    <!--<script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js"></script>-->
+    <script type="text/javascript" src="http://code.jquery.com/qunit/qunit-1.20.0.js"></script>
     <script type="text/javascript" src="./libcoverage.wcs.js"></script>
 
     <script>
@@ -80,93 +81,123 @@ module("WCS.Core.Parse")
 test("Capabilities", function() {
     var obj = wcsp.parse($("#capabilities").text());
     deepEqual(obj, {
-        serviceIdentification: {
-            title: "Test",
-            abstract: "Test Abstract",
-            keywords: ["KeywordA", "KeywordB", "KeywordC"],
-            profiles: [
-                "http://www.opengis.net/spec/WCS_application-profile_earth-observation/1.0/conf/eowcs",
-                "http://www.opengis.net/spec/WCS_application-profile_earth-observation/1.0/conf/eowcs_get-kvp",
-                "http://www.opengis.net/spec/WCS/2.0/conf/core",
-                "http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf/get-kvp",
-                "http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf/post-xml",
-                "http://www.opengis.net/spec/WCS_service-model_crs-predefined/1.0/conf/crs-predefined",
-                "http://www.placeholder.com/IMAGECRS",
-                "http://www.opengis.net/spec/WCS_encoding_geotiff/1.0/conf/geotiff",
-                "http://www.placeholder.com/GML_and_GeoTIFF",
-                "http://www.opengis.net/spec/WCS_service-model_scaling+interpolation/1.0/conf/scaling+interpolation",
-                "http://www.opengis.net/spec/WCS_service-model_band-subsetting/1.0/conf/band-subsetting"
-            ],
-            serviceType: "OGC WCS",
-            serviceTypeVersion: "2.0.0",
-            fees: "No Fee",
-            accessConstraints: "No constraint"
+      "contents": {
+        "coverages": [
+          {
+            "coverageId": "CoverageID1",
+            "coverageSubtype": "ReferenceableDataset"
+          },
+          {
+            "coverageId": "CoverageID2",
+            "coverageSubtype": "RectifiedDataset"
+          },
+          {
+            "coverageId": "CoverageID3",
+            "coverageSubtype": "RectifiedDataset"
+          },
+          {
+            "coverageId": "MosaicID1",
+            "coverageSubtype": "RectifiedStitchedMosaic"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "getUrl": "http://example.com/ows?",
+          "name": "GetCapabilities",
+          "postUrl": "http://example.com/ows?"
         },
-        serviceProvider: {
-            providerName: "Provider Inc.",
-            providerSite: "http://www.example.com",
-            individualName: "John Doe",
-            positionName: "CEO",
-            contactInfo: {
-                phone: {
-                    voice: "01/2345678",
-                    facsimile: "01/23456789"
-                },
-                address: {
-                    deliveryPoint: "Somestreet 1/2",
-                    city: "Fooville",
-                    administrativeArea: "Foostate",
-                    postalCode: "12345",
-                    country: "United States of Foo",
-                    electronicMailAddress: "john.doe@example.com"
-                },
-                onlineResource: "http://www.example.org",
-                hoursOfService: "Mon - Fri 10:30 - 17:00",
-                contactInstructions: "E-mails are usually answered within 3 working days."
-            },
-            role: "Service provider"
+        {
+          "getUrl": "http://example.com/ows?",
+          "name": "DescribeCoverage",
+          "postUrl": "http://example.com/ows?"
         },
-        serviceMetadata: {
-            formatsSupported: [
-                "application/gml+xml",
-                "image/tiff",
-                "image/jp2"
-            ],
-            crssSupported: ["http://www.opengis.net/def/crs/EPSG/0/4326"]
+        {
+          "getUrl": "http://example.com/ows?",
+          "name": "GetCoverage",
+          "postUrl": "http://example.com/ows?"
         },
-        operations: [{
-            name: "GetCapabilities",
-            getUrl: "http://example.com/ows?",
-            postUrl: "http://example.com/ows?"
-        }, {
-            name: "DescribeCoverage",
-            getUrl: "http://example.com/ows?",
-            postUrl: "http://example.com/ows?"
-        }, {
-            name: "GetCoverage",
-            getUrl: "http://example.com/ows?",
-            postUrl: "http://example.com/ows?"
-        }, {
-            name: "DescribeEOCoverageSet",
-            getUrl: "http://example.com/ows?",
-            postUrl: "http://example.com/ows?"
-        }],
-        contents: {
-            coverages: [{
-                coverageId: "CoverageID1",
-                coverageSubtype: "ReferenceableDataset"
-            }, {
-                coverageId: "CoverageID2",
-                coverageSubtype: "RectifiedDataset"
-            }, {
-                coverageId: "CoverageID3",
-                coverageSubtype: "RectifiedDataset"
-            }, {
-                coverageId: "MosaicID1",
-                coverageSubtype: "RectifiedStitchedMosaic"
-            }]
+        {
+          "getUrl": "http://example.com/ows?",
+          "name": "DescribeEOCoverageSet",
+          "postUrl": "http://example.com/ows?"
         }
-    });    
+      ],
+      "serviceIdentification": {
+        "abstract": "Test Abstract",
+        "accessConstraints": "No constraint",
+        "fees": "No Fee",
+        "keywords": [
+          "KeywordA",
+          "KeywordB",
+          "KeywordC"
+        ],
+        "profiles": [
+          "http://www.opengis.net/spec/WCS_application-profile_earth-observation/1.0/conf/eowcs",
+          "http://www.opengis.net/spec/WCS_application-profile_earth-observation/1.0/conf/eowcs_get-kvp",
+          "http://www.opengis.net/spec/WCS/2.0/conf/core",
+          "http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf/get-kvp",
+          "http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf/post-xml",
+          "http://www.opengis.net/spec/WCS_service-model_crs-predefined/1.0/conf/crs-predefined",
+          "http://www.placeholder.com/IMAGECRS",
+          "http://www.opengis.net/spec/WCS_encoding_geotiff/1.0/conf/geotiff",
+          "http://www.placeholder.com/GML_and_GeoTIFF",
+          "http://www.opengis.net/spec/WCS_service-model_scaling+interpolation/1.0/conf/scaling+interpolation",
+          "http://www.opengis.net/spec/WCS_service-model_band-subsetting/1.0/conf/band-subsetting"
+        ],
+        "serviceType": "OGC WCS",
+        "serviceTypeVersion": "2.0.0",
+        "title": "Test"
+      },
+      "serviceMetadata": {
+        "crssSupported": [
+          "http://www.opengis.net/def/crs/EPSG/0/4326",
+          "http://www.opengis.net/def/crs/EPSG/0/3857",
+          "http://www.opengis.net/def/crs/EPSG/0/900913",
+          "http://www.opengis.net/def/crs/EPSG/0/3035"
+        ],
+        "formatsSupported": [
+          "image/tiff",
+          "image/jp2",
+          "application/x-netcdf",
+          "application/x-hdf",
+          "image/png"
+        ],
+        "interpolationsSupported": [
+          "http://www.opengis.net/def/interpolation/OGC/1/average",
+          "http://www.opengis.net/def/interpolation/OGC/1/nearest-neighbour",
+          "http://www.opengis.net/def/interpolation/OGC/1/bilinear",
+          "http://www.opengis.net/def/interpolation/OGC/1/cubic",
+          "http://www.opengis.net/def/interpolation/OGC/1/cubic-spline",
+          "http://www.opengis.net/def/interpolation/OGC/1/lanczos",
+          "http://www.opengis.net/def/interpolation/OGC/1/mode"
+        ]
+      },
+      "serviceProvider": {
+        "contactInfo": {
+          "address": {
+            "administrativeArea": "Foostate",
+            "city": "Fooville",
+            "country": "United States of Foo",
+            "deliveryPoint": "Somestreet 1/2",
+            "electronicMailAddress": "john.doe@example.com",
+            "postalCode": "12345"
+          },
+          "contactInstructions": "E-mails are usually answered within 3 working days.",
+          "hoursOfService": "Mon - Fri 10:30 - 17:00",
+          "onlineResource": "http://www.example.org",
+          "phone": {
+            "facsimile": "01/23456789",
+            "voice": "01/2345678"
+          }
+        },
+        "individualName": "John Doe",
+        "positionName": "CEO",
+        "providerName": "Provider Inc.",
+        "providerSite": "http://www.example.com",
+        "role": "Service provider"
+      }
+    });
 });
 
 test("CoverageDescriptions", function() {
@@ -223,9 +254,7 @@ test("CoverageDescriptions", function() {
                 allowedValues: [0, 65535],
                 significantFigures: 5
             }],
-            supportedCRSs: [],
-            nativeCRS: undefined,
-            supportedFormats: []
+            nativeFormat: ""
         }]
     });
 });
@@ -235,7 +264,7 @@ test("ExceptionReport", function() {
     var originalOption = wcsp.options.throwOnException;
 
     wcsp.options.throwOnException = false;
-    
+
     var obj = wcsp.parse($("#exceptionReport").text());
     deepEqual(obj, {
         code: "InvalidParameterValue",
@@ -256,7 +285,7 @@ test("ExceptionReport", function() {
     </script>
 
 <script type="text/xml" id="capabilities">
-<wcs:Capabilities updateSequence="20110610T153000Z" version="2.0.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
+<wcs:Capabilities xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" updateSequence="20131219T132000Z" version="2.0.1" xsi:schemaLocation="http://www.opengis.net/ows/2.0 http://schemas.opengis.net/ows/2.0/owsAll.xsd http://www.opengis.net/wcs/wcseo/1.0 http://schemas.opengis.net/wcs/wcseo/1.0/wcsEOAll.xsd">
   <ows:ServiceIdentification>
     <ows:Title>Test</ows:Title>
     <ows:Abstract>Test Abstract</ows:Abstract>
@@ -366,12 +395,28 @@ test("ExceptionReport", function() {
     </ows:Operation>
   </ows:OperationsMetadata>
   <wcs:ServiceMetadata>
-    <wcs:formatSupported>application/gml+xml</wcs:formatSupported>
     <wcs:formatSupported>image/tiff</wcs:formatSupported>
     <wcs:formatSupported>image/jp2</wcs:formatSupported>
-    <wcs:CrsMetadata>
-      <wcs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/4326</wcs:crsSupported>
-    </wcs:CrsMetadata>
+    <wcs:formatSupported>application/x-netcdf</wcs:formatSupported>
+    <wcs:formatSupported>application/x-hdf</wcs:formatSupported>
+    <wcs:formatSupported>image/png</wcs:formatSupported>
+    <wcs:Extension>
+      <crs:CrsMetadata>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/4326</crs:crsSupported>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/3857</crs:crsSupported>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/900913</crs:crsSupported>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/3035</crs:crsSupported>
+      </crs:CrsMetadata>
+      <int:InterpolationMetadata>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/average</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/nearest-neighbour</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/bilinear</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/cubic</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/cubic-spline</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/lanczos</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/mode</int:InterpolationSupported>
+      </int:InterpolationMetadata>
+    </wcs:Extension>
   </wcs:ServiceMetadata>
   <wcs:Contents>
     <wcs:CoverageSummary>
@@ -390,17 +435,19 @@ test("ExceptionReport", function() {
       <wcs:CoverageId>MosaicID1</wcs:CoverageId>
       <wcs:CoverageSubtype>RectifiedStitchedMosaic</wcs:CoverageSubtype>
     </wcs:CoverageSummary>
-    <wcseo:DatasetSeriesSummary>
-      <ows:WGS84BoundingBox>
-        <ows:LowerCorner>-4.04296900 32.08007800</ows:LowerCorner>
-        <ows:UpperCorner>33.13476600 45.17578100</ows:UpperCorner>
-      </ows:WGS84BoundingBox>
-      <wcseo:DatasetSeriesId>SeriesID1</wcseo:DatasetSeriesId>
-      <gml:TimePeriod gml:id="SeriesID1_timeperiod">
-        <gml:beginPosition>2006-08-16T00:00:00</gml:beginPosition>
-        <gml:endPosition>2006-08-31T00:00:00</gml:endPosition>
-      </gml:TimePeriod>
-    </wcseo:DatasetSeriesSummary>
+    <wcs:Extension>
+      <wcseo:DatasetSeriesSummary>
+        <ows:WGS84BoundingBox>
+          <ows:LowerCorner>-4.04296900 32.08007800</ows:LowerCorner>
+          <ows:UpperCorner>33.13476600 45.17578100</ows:UpperCorner>
+        </ows:WGS84BoundingBox>
+        <wcseo:DatasetSeriesId>SeriesID1</wcseo:DatasetSeriesId>
+        <gml:TimePeriod gml:id="SeriesID1_timeperiod">
+          <gml:beginPosition>2006-08-16T00:00:00</gml:beginPosition>
+          <gml:endPosition>2006-08-31T00:00:00</gml:endPosition>
+        </gml:TimePeriod>
+      </wcseo:DatasetSeriesSummary>
+    </wcs:Extension>
   </wcs:Contents>
 </wcs:Capabilities>
 </script>

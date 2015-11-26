@@ -51,7 +51,7 @@ test("Capabilities", function() {
                 new Date("2006-08-31T00:00:00")
             ]
         }]
-    });    
+    });
 });
 
 test("CoverageDescriptions", function() {
@@ -108,9 +108,7 @@ test("CoverageDescriptions", function() {
                 allowedValues: [0, 65535],
                 significantFigures: 5
             }],
-            supportedCRSs: [],
-            nativeCRS: undefined,
-            supportedFormats: [],
+            nativeFormat: "",
             footprint: [46.215382038266426, 11.452164999301536, 46.077138992332522, 12.56460056524387, 45.898160545555285, 13.88709473239655, 45.680873827856274, 15.27428923693798, 45.449785763554488, 16.732634573806106, 45.051916790463871, 18.910935999726473, 44.748011699503031, 20.408605523933062, 44.411941287675177, 21.96696659827764, 44.042016022159309, 23.519043285242258, 43.643722088460834, 25.093495248306709, 42.820580145843472, 24.697623348710682, 41.526815857193817, 24.095725514178625, 40.080867763238736, 23.448735861981131, 39.025151818307243, 22.989465254572469, 37.85145204973027, 22.50232224402901, 36.642481720935422, 22.01522231099019, 35.307014823570611, 21.498852478425345, 33.815137282909021, 20.944158667755332, 32.266926679766343, 20.386391220319478, 32.473013412727383, 19.564204682221426, 32.79995702514136, 18.208092189126496, 33.156754966055587, 16.635974830934515, 33.490105968579719, 15.045830395932443, 33.802420221893549, 13.468673053964881, 34.117627714568791, 11.788656279967018, 34.404759326849735, 10.10198645739054, 34.612069910182186, 8.778925655898064, 35.937735362108867, 9.065762626406386, 37.042634504980391, 9.314689072633191, 38.211692868275371, 9.571219329906695, 39.708832350160876, 9.910891562982675, 41.235238659326725, 10.256936653724585, 42.571739065122323, 10.570638082577355, 43.567273827516843, 10.804735163945022, 44.657040223845229, 11.06940217936636, 45.550039415025189, 11.28225456261711, 46.215382038266426, 11.452164999301536],
             timePeriod: [
                 new Date("2006-08-22T09:20:58Z"),
@@ -149,7 +147,6 @@ test("ReferenceableEOCoverageSet", function() {
               0
             ]
           },
-          "nativeCRS": undefined,
           "offsetVectors": [],
           "origin": undefined,
           "rangeType": [
@@ -399,8 +396,7 @@ test("ReferenceableEOCoverageSet", function() {
             4481,
             4481
           ],
-          "supportedCRSs": [],
-          "supportedFormats": []
+          "nativeFormat": "image/tiff"
         }
       ],
       "datasetSeriesDescriptions": [
@@ -415,7 +411,7 @@ test("ReferenceableEOCoverageSet", function() {
     </script>
 
 <script type="text/xml" id="capabilities">
-<wcs:Capabilities updateSequence="20110610T153000Z" version="2.0.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
+<wcs:Capabilities xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:scal="http://www.opengis.net/wcs/scaling/1.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:rsub="http://www.opengis.net/wcs/range-subsetting/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" updateSequence="20131219T132000Z" version="2.0.1" xsi:schemaLocation="http://www.opengis.net/ows/2.0 http://schemas.opengis.net/ows/2.0/owsAll.xsd http://www.opengis.net/wcs/wcseo/1.0 http://schemas.opengis.net/wcs/wcseo/1.0/wcsEOAll.xsd">
   <ows:ServiceIdentification>
     <ows:Title>Test</ows:Title>
     <ows:Abstract>Test Abstract</ows:Abstract>
@@ -524,7 +520,30 @@ test("ReferenceableEOCoverageSet", function() {
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <wcs:ServiceMetadata />
+  <wcs:ServiceMetadata>
+    <wcs:formatSupported>image/tiff</wcs:formatSupported>
+    <wcs:formatSupported>image/jp2</wcs:formatSupported>
+    <wcs:formatSupported>application/x-netcdf</wcs:formatSupported>
+    <wcs:formatSupported>application/x-hdf</wcs:formatSupported>
+    <wcs:formatSupported>image/png</wcs:formatSupported>
+    <wcs:Extension>
+      <crs:CrsMetadata>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/4326</crs:crsSupported>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/3857</crs:crsSupported>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/900913</crs:crsSupported>
+        <crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/3035</crs:crsSupported>
+      </crs:CrsMetadata>
+      <int:InterpolationMetadata>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/average</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/nearest-neighbour</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/bilinear</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/cubic</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/cubic-spline</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/lanczos</int:InterpolationSupported>
+        <int:InterpolationSupported>http://www.opengis.net/def/interpolation/OGC/1/mode</int:InterpolationSupported>
+      </int:InterpolationMetadata>
+    </wcs:Extension>
+  </wcs:ServiceMetadata>
   <wcs:Contents>
     <wcs:CoverageSummary>
       <wcs:CoverageId>CoverageID1</wcs:CoverageId>
@@ -542,23 +561,25 @@ test("ReferenceableEOCoverageSet", function() {
       <wcs:CoverageId>MosaicID1</wcs:CoverageId>
       <wcs:CoverageSubtype>RectifiedStitchedMosaic</wcs:CoverageSubtype>
     </wcs:CoverageSummary>
-    <wcseo:DatasetSeriesSummary>
-      <ows:WGS84BoundingBox>
-        <ows:LowerCorner>-4.04296900 32.08007800</ows:LowerCorner>
-        <ows:UpperCorner>33.13476600 45.17578100</ows:UpperCorner>
-      </ows:WGS84BoundingBox>
-      <wcseo:DatasetSeriesId>SeriesID1</wcseo:DatasetSeriesId>
-      <gml:TimePeriod gml:id="SeriesID1_timeperiod">
-        <gml:beginPosition>2006-08-16T00:00:00</gml:beginPosition>
-        <gml:endPosition>2006-08-31T00:00:00</gml:endPosition>
-      </gml:TimePeriod>
-    </wcseo:DatasetSeriesSummary>
+    <wcs:Extension>
+      <wcseo:DatasetSeriesSummary>
+        <ows:WGS84BoundingBox>
+          <ows:LowerCorner>-4.04296900 32.08007800</ows:LowerCorner>
+          <ows:UpperCorner>33.13476600 45.17578100</ows:UpperCorner>
+        </ows:WGS84BoundingBox>
+        <wcseo:DatasetSeriesId>SeriesID1</wcseo:DatasetSeriesId>
+        <gml:TimePeriod gml:id="SeriesID1_timeperiod">
+          <gml:beginPosition>2006-08-16T00:00:00</gml:beginPosition>
+          <gml:endPosition>2006-08-31T00:00:00</gml:endPosition>
+        </gml:TimePeriod>
+      </wcseo:DatasetSeriesSummary>
+    </wcs:Extension>
   </wcs:Contents>
 </wcs:Capabilities>
 </script>
 
 <script type="text/xml" id="coverageDescriptions">
-<wcs:CoverageDescriptions xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
+<wcs:CoverageDescriptions xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
   <wcs:CoverageDescription gml:id="CoverageID1">
     <gml:boundedBy>
       <gml:Envelope axisLabels="lat long" srsDimension="2" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" uomLabels="deg deg">
@@ -676,7 +697,7 @@ test("ReferenceableEOCoverageSet", function() {
 </wcs:CoverageDescriptions>
 </script>
 <script type="text/xml" id="referenceableEOCoverageSet">
-<wcseo:EOCoverageSetDescription xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcseo/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" numberMatched="1" numberReturned="1" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
+<wcseo:EOCoverageSetDescription xmlns:eop="http://www.opengis.net/eop/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:om="http://www.opengis.net/om/2.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:wcseo="http://www.opengis.net/wcs/wcseo/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" numberMatched="1" numberReturned="1" xsi:schemaLocation="http://www.opengis.net/wcseo/1.0 http://schemas.opengis.net/wcseo/1.0/wcsEOAll.xsd">
   <wcs:CoverageDescriptions>
     <wcs:CoverageDescription gml:id="MER_FRS_1PNPDE20111101_063210_000001973108_00135_50580_4961">
       <gml:boundedBy>
@@ -998,4 +1019,3 @@ test("ReferenceableEOCoverageSet", function() {
     <ol id="qunit-tests"></ol>
 </body>
 </html>
-
