@@ -9,7 +9,7 @@ namespace("WCS.EO");
 WCS.EO.KVP = function() {
 
     return { /// begin public functions
-    
+
     /**
      *  function WCS.EO.describeEOCoverageSetURL
      *
@@ -19,7 +19,7 @@ WCS.EO.KVP = function() {
      * @param eoid: the ID of the coverage set
      * @param options: an object containing any the following optional parameters
      *
-     *      -bbox: an array of four values in the following order: 
+     *      -bbox: an array of four values in the following order:
      *             [minx, miny, maxx, maxy]
      *      -subsetX: the subset of the X axis as an array in the following form:
      *                [minx, maxx]
@@ -48,9 +48,9 @@ WCS.EO.KVP = function() {
         }
         options = options || {};
         extraParams = extraParams || {};
-        
+
         var params = ['service=wcs', 'version=2.0.0', 'request=describeeocoverageset', 'eoid=' + eoid];
-        
+
         if (options.bbox && !options.subsetX && !options.subsetY) {
             options.subsetX = [options.bbox[0], options.bbox[2]];
             options.subsetY = [options.bbox[1], options.bbox[3]];
@@ -61,7 +61,7 @@ WCS.EO.KVP = function() {
         if (options.subsetY) {
             params.push('subset=y(' + options.subsetY[0] + ',' + options.subsetY[1] + ')');
         }
-        
+
         if (options.subsetTime) {
             params.push('subset=phenomenonTime("' + options.subsetTime[0] + '","' + options.subsetTime[1] + '")');
         }
@@ -96,29 +96,63 @@ WCS.EO.Parse = function() {
     var ns = {
         wcs: "http://www.opengis.net/wcs/2.0",
         gml: "http://www.opengis.net/gml/3.2",
+        gmlcov: "http://www.opengis.net/gmlcov/1.0",
         eop: "http://www.opengis.net/eop/2.0",
-        wcseo: "http://www.opengis.net/wcseo/1.0",
+        wcseo: "http://www.opengis.net/wcs/wcseo/1.0",
         om: "http://www.opengis.net/om/2.0"
     }
 
-    var getFirst = WCS.Util.getFirst,
-        getText = WCS.Util.getText,
-        getAll = WCS.Util.getAll,
-        getTextArray = WCS.Util.getTextArray,
-        map = WCS.Util.map;
+    var nsResolver = function(prefix) {
+      return ns[prefix] || null;
+    }
+
+    var xPath = function(node, xpath) {
+      var doc = node.ownerDocument;
+      var text = xpath.indexOf("text()") != -1 || xpath.indexOf("@") != -1;
+      if (text) {
+        return doc.evaluate(xpath, node, nsResolver, XPathResult.STRING_TYPE, null).stringValue;
+      }
+      else {
+        result = doc.evaluate(xpath, node, nsResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        if (result.snapshotLength == 0) {
+          return null;
+        }
+        else {
+          return result.snapshotItem(0);
+        }
+      }
+    }
+
+    var xPathArray = function(node, xpath) {
+      var doc = node.ownerDocument;
+      var result = doc.evaluate(xpath, node, nsResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+      var text = xpath.indexOf("text()") != -1 || xpath.indexOf("@") != -1;
+      var array = new Array(result.snapshotLength);
+      for (var i=0; i < result.snapshotLength; ++i) {
+        if (text) {
+          array[i] = result.snapshotItem(i).textContent;
+        }
+        else {
+          array[i] = result.snapshotItem(i);
+        }
+      }
+      return array;
+    }
+
+    var map = WCS.Util.map;
 
     /// end private fields
 
     return { /// begin public functions
-    
+
     parseEOCoverageSetDescription: function(node) {
-        var covDescriptions = getFirst(node, ns.wcs, "CoverageDescriptions");
-        var cdescs = covDescriptions ? WCS.Core.Parse.callParseFunctions(
+        var covDescriptions = xPath(node, "wcs:CoverageDescriptions");
+        var cdescs = (covDescriptions != null) ? WCS.Core.Parse.callParseFunctions(
             "CoverageDescriptions", covDescriptions
         ) : [];
 
-        var dssDescriptions = getFirst(node, ns.wcseo, "DatasetSeriesDescriptions");
-        var dssdescs = (dssDescriptions) ? WCS.Core.Parse.callParseFunctions(
+        var dssDescriptions = xPath(node, "wcseo:DatasetSeriesDescriptions");
+        var dssdescs = (dssDescriptions != null) ? WCS.Core.Parse.callParseFunctions(
             "DatasetSeriesDescriptions", dssDescriptions
         ) : [];
 
@@ -129,7 +163,7 @@ WCS.EO.Parse = function() {
     },
 
     parseDatasetSeriesDescriptions: function(node) {
-        var descs = map(getAll(node, ns.wcseo, "DatasetSeriesDescription"), function(datasetSeriesDescription) {
+        var descs = map(xPathArray(node, "wcseo:DatasetSeriesDescription"), function(datasetSeriesDescription) {
             return WCS.Core.Parse.callParseFunctions("DatasetSeriesDescription", datasetSeriesDescription);
         });
 
@@ -143,12 +177,12 @@ WCS.EO.Parse = function() {
     parseExtendedCapabilities: function(node) {
         return {
             "contents": {
-                "datasetSeries": map(getAll(node, ns.wcseo, "DatasetSeriesSummary"), function(sum) {
+                "datasetSeries": map(xPathArray(node, "wcs:Contents/wcs:Extension/wcseo:DatasetSeriesSummary"), function(sum) {
                     return {
-                        "datasetSeriesId": getText(sum, ns.wcseo, "DatasetSeriesId"),
+                        "datasetSeriesId": xPath(sum, "wcseo:DatasetSeriesId/text()"),
                         "timePeriod": [
-                            new Date(getText(sum, ns.gml, "beginPosition")),
-                            new Date(getText(sum, ns.gml, "endPosition"))
+                            new Date(xPath(sum, "gml:TimePeriod/gml:beginPosition/text()")),
+                            new Date(xPath(sum, "gml:TimePeriod/gml:endPosition/text()"))
                         ]
                     };
                 })
@@ -157,15 +191,14 @@ WCS.EO.Parse = function() {
     },
 
     parseExtendedCoverageDescription: function(node) {
-        var eoMetadata = getFirst(node, ns.wcseo, "EOMetadata");
+        var eoMetadata = xPath(node, "gmlcov:metadata/wcseo:EOMetadata");
         if (eoMetadata) {
-            var phenomenonTime = getFirst(eoMetadata, ns.om, "phenomenonTime");
-            var featureOfInterest = getFirst(eoMetadata, ns.om, "featureOfInterest");
+            var phenomenonTime = xPath(eoMetadata, "eop:EarthObservation/om:phenomenonTime");
             return {
-                "footprint": WCS.Util.stringToFloatArray(getText(featureOfInterest, ns.gml, "posList")),
+                "footprint": WCS.Util.stringToFloatArray(xPath(eoMetadata, "eop:EarthObservation/om:featureOfInterest/eop:Footprint/eop:multiExtentOf/gml:MultiSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList/text()")),
                 "timePeriod": [
-                    new Date(getText(phenomenonTime, ns.gml, "beginPosition")),
-                    new Date(getText(phenomenonTime, ns.gml, "endPosition"))
+                    new Date(xPath(phenomenonTime, "gml:TimePeriod/gml:beginPosition/text()")),
+                    new Date(xPath(phenomenonTime, "gml:TimePeriod/gml:endPosition/text()"))
                 ]
             };
         }

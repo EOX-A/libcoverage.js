@@ -217,7 +217,7 @@ WCS.Core.KVP = function() {
         }
 
         var params = ['service=wcs', 'version=2.0.0', 'request=describecoverage'];
-        
+
         extraParams = extraParams || {};
         params.push('coverageid=' + ((typeof coverageids === "string")
                     ? coverageids : coverageids.join(",")));
@@ -313,7 +313,7 @@ WCS.Core.KVP = function() {
             params.push("outputcrs=" + options.outputCRS);
         if (options.multipart)
             params.push("mediatype=multipart/mixed");
-        
+
         var extra = WCS.Util.objectToKVP(extraParams);
         return url + (url.charAt(url.length-1) !== "?" ? "?" : "")
                 + params.join("&") + ((extra.length > 0) ? "&" + extra : "");
@@ -370,7 +370,45 @@ WCS.Core.Parse = (function() {
         gml: "http://www.opengis.net/gml/3.2",
         gmlcov: "http://www.opengis.net/gmlcov/1.0",
         swe: "http://www.opengis.net/swe/2.0",
-        crs: "http://www.opengis.net/wcs/crs/1.0"
+        crs: "http://www.opengis.net/wcs/crs/1.0",
+        int: "http://www.opengis.net/wcs/interpolation/1.0"
+    }
+
+    var nsResolver = function(prefix) {
+      return ns[prefix] || null;
+    }
+
+    var xPath = function(node, xpath) {
+      var doc = node.ownerDocument;
+      var text = xpath.indexOf("text()") != -1 || xpath.indexOf("@") != -1;
+      if (text) {
+        return doc.evaluate(xpath, node, nsResolver, XPathResult.STRING_TYPE, null).stringValue;
+      }
+      else {
+        result = doc.evaluate(xpath, node, nsResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        if (result.snapshotLength == 0) {
+          return null;
+        }
+        else {
+          return result.snapshotItem(0);
+        }
+      }
+    }
+
+    var xPathArray = function(node, xpath) {
+      var doc = node.ownerDocument;
+      var result = doc.evaluate(xpath, node, nsResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+      var text = xpath.indexOf("text()") != -1 || xpath.indexOf("@") != -1;
+      var array = new Array(result.snapshotLength);
+      for (var i=0; i < result.snapshotLength; ++i) {
+        if (text) {
+          array[i] = result.snapshotItem(i).textContent;
+        }
+        else {
+          array[i] = result.snapshotItem(i);
+        }
+      }
+      return array;
     }
 
     /// end private fields
@@ -417,7 +455,7 @@ WCS.Core.Parse = (function() {
 
     /**
      *  function WCS.Core.callParseFunctions
-     * 
+     *
      * Calls all registered functions for a specified node name. A merged object
      * with all results of each function is returned.
      *
@@ -456,13 +494,7 @@ WCS.Core.Parse = (function() {
         throwOnException: false
     };
 
-
-    var getFirst = WCS.Util.getFirst,
-        getText = WCS.Util.getText,
-        getAll = WCS.Util.getAll,
-        getTextArray = WCS.Util.getTextArray,
-        map = WCS.Util.map;
-
+    var map = WCS.Util.map;
 
     /**
      *  function WCS.Core.parse
@@ -479,10 +511,12 @@ WCS.Core.Parse = (function() {
 
     var parse = function(xml) {
         var root;
-        if (typeof xml === "string")
+        if (typeof xml === "string") {
             root = parseXml(xml).documentElement;
-        else
+        }
+        else {
             root = xml.documentElement;
+        }
         return WCS.Core.Parse.callParseFunctions(root.localName, root);
     };
 
@@ -498,14 +532,17 @@ WCS.Core.Parse = (function() {
      */
 
     var parseExceptionReport = function(node) {
-        var exception = getFirst(node, ns.ows, "Exception");
+        var exception = xPath(node, "ows:Exception");
         var parsed = {
             "code": exception.getAttribute("exceptionCode"),
             "locator": exception.getAttribute("locator"),
-            "text": getText(exception, ns.ows, "ExceptionText")
+            "text": xPath(exception, "ows:ExceptionText/text()")
         };
         if (options.throwOnException) {
-            throw new Exception(parsed.text);
+            var e = new Exception(parsed.text);
+            e.locator = parsed.locator;
+            e.code = parsed.code;
+            throw e;
         }
         else return parsed;
     };
@@ -521,63 +558,58 @@ WCS.Core.Parse = (function() {
      */
 
     var parseCapabilities = function(node) {
-        var id = getFirst(node, ns.ows, "ServiceIdentification");
-        var prov = getFirst(node, ns.ows, "ServiceProvider");
-        var sm = getFirst(node, ns.wcs, "ServiceMetadata");
-        var phone = getFirst(prov, ns.ows, "Phone");
-        var address = getFirst(prov, ns.ows, "Address");
-        
         return {
             "serviceIdentification": {
-                "title": getText(id, ns.ows, "Title"),
-                "abstract": getText(id, ns.ows, "Abstract"),
-                "keywords": getTextArray(id, ns.ows, "Keyword"),
-                "serviceType": getText(id, ns.ows, "ServiceType"),
-                "serviceTypeVersion": getText(id, ns.ows, "ServiceTypeVersion"),
-                "profiles": getTextArray(id, ns.ows, "Profile"),
-                "fees": getText(id, ns.ows, "Fees"),
-                "accessConstraints": getText(id, ns.ows, "AccessConstraints")
+                "title": xPath(node, "ows:ServiceIdentification/ows:Title/text()"),
+                "abstract": xPath(node, "ows:ServiceIdentification/ows:Abstract/text()"),
+                "keywords": xPathArray(node, "ows:ServiceIdentification/ows:Keywords/ows:Keyword/text()"),
+                "serviceType": xPath(node, "ows:ServiceIdentification/ows:ServiceType/text()"),
+                "serviceTypeVersion": xPath(node, "ows:ServiceIdentification/ows:ServiceTypeVersion/text()"),
+                "profiles": xPathArray(node, "ows:ServiceIdentification/ows:Profile/text()"),
+                "fees": xPath(node, "ows:ServiceIdentification/ows:Fees/text()"),
+                "accessConstraints": xPath(node, "ows:ServiceIdentification/ows:AccessConstraints/text()")
             },
             "serviceProvider": {
-                "providerName": getText(prov, ns.ows, "ProviderName"),
-                "providerSite": getFirst(prov, ns.ows, "ProviderSite").getAttributeNS(ns.xlink, "href"),
-                "individualName": getText(prov, ns.ows, "IndividualName"),
-                "positionName": getText(prov, ns.ows, "PositionName"),
+                "providerName": xPath(node, "ows:ServiceProvider/ows:ProviderName/text()"),
+                "providerSite": xPath(node, "ows:ServiceProvider/ows:ProviderSite/@xlink:href"),
+                "individualName": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:IndividualName/text()"),
+                "positionName": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:PositionName/text()"),
                 "contactInfo": {
                     "phone": {
-                        "voice": getText(phone, ns.ows, "Voice"),
-                        "facsimile": getText(phone, ns.ows, "Facsimile")
+                        "voice": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Phone/ows:Voice/text()"),
+                        "facsimile": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Phone/ows:Facsimile/text()")
                     },
                     "address": {
-                        "deliveryPoint": getText(address, ns.ows, "DeliveryPoint"),
-                        "city": getText(address, ns.ows, "City"),
-                        "administrativeArea": getText(address, ns.ows, "AdministrativeArea"),
-                        "postalCode": getText(address, ns.ows, "PostalCode"),
-                        "country": getText(address, ns.ows, "Country"),
-                        "electronicMailAddress": getText(address, ns.ows, "ElectronicMailAddress")
+                        "deliveryPoint": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Address/ows:DeliveryPoint/text()"),
+                        "city": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Address/ows:City/text()"),
+                        "administrativeArea": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Address/ows:AdministrativeArea/text()"),
+                        "postalCode": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Address/ows:PostalCode/text()"),
+                        "country": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Address/ows:Country/text()"),
+                        "electronicMailAddress": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:Address/ows:ElectronicMailAddress/text()")
                     },
-                    "onlineResource": getFirst(prov, ns.ows, "OnlineResource").getAttributeNS(ns.xlink, "href"),
-                    "hoursOfService": getText(prov, ns.ows, "HoursOfService"),
-                    "contactInstructions": getText(prov, ns.ows, "ContactInstructions")
+                    "onlineResource": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href"),
+                    "hoursOfService": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:HoursOfService/text()"),
+                    "contactInstructions": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:ContactInstructions/text()")
                 },
-                "role": getText(prov, ns.ows, "Role")
+                "role": xPath(node, "ows:ServiceProvider/ows:ServiceContact/ows:Role/text()")
             },
-            "serviceMetadata": { // TODO: not yet standardized
-                "formatsSupported": getTextArray(sm, ns.wcs, "formatSupported"),
-                "crssSupported": getTextArray(sm, ns.crs, "crsSupported")
+            "serviceMetadata": {
+                "formatsSupported": xPathArray(node, "wcs:ServiceMetadata/wcs:formatSupported/text()"),
+                "crssSupported": xPathArray(node, "wcs:ServiceMetadata/wcs:Extension/crs:CrsMetadata/crs:crsSupported/text()"),
+                "interpolationsSupported": xPathArray(node, "wcs:ServiceMetadata/wcs:Extension/int:InterpolationMetadata/int:InterpolationSupported/text()")
             },
-            "operations": map(getAll(node, ns.ows, "Operation"), function(op) {
+            "operations": map(xPathArray(node, "ows:OperationsMetadata/ows:Operation"), function(op) {
                 return {
                     "name": op.getAttribute("name"),
-                    "getUrl": getFirst(op, ns.ows, "Post").getAttributeNS(ns.xlink, "href"),
-                    "postUrl": getFirst(op, ns.ows, "Get").getAttributeNS(ns.xlink, "href")
+                    "getUrl": xPath(op, "ows:DCP/ows:HTTP/ows:Get/@xlink:href"),
+                    "postUrl": xPath(op, "ows:DCP/ows:HTTP/ows:Post/@xlink:href")
                 };
             }),
             "contents": {
-                "coverages": map(getAll(node, ns.wcs, "CoverageSummary"), function(sum) {
+                "coverages": map(xPathArray(node, "wcs:Contents/wcs:CoverageSummary"), function(sum) {
                     return {
-                        "coverageId": getText(sum, ns.wcs, "CoverageId"),
-                        "coverageSubtype": getText(sum, ns.wcs, "CoverageSubtype")
+                        "coverageId": xPath(sum, "wcs:CoverageId/text()"),
+                        "coverageSubtype": xPath(sum, "wcs:CoverageSubtype/text()")
                     };
                 })
             }
@@ -595,7 +627,7 @@ WCS.Core.Parse = (function() {
      */
 
     var parseCoverageDescriptions = function(node) {
-        var descs = map(getAll(node, ns.wcs, "CoverageDescription"), function(desc) {
+        var descs = map(xPathArray(node, "wcs:CoverageDescription"), function(desc) {
             return WCS.Core.Parse.callParseFunctions(desc.localName, desc);
         });
         return {"coverageDescriptions": descs};
@@ -612,26 +644,23 @@ WCS.Core.Parse = (function() {
      */
 
     var parseCoverageDescription = function(node) {
-        var envelope = getFirst(node, ns.gml, "Envelope");
-        var domainSet = getFirst(node, ns.gml, "domainSet");
+        var low = WCS.Util.stringToIntArray(xPath(node, "gml:domainSet/gml:RectifiedGrid/gml:limits/gml:GridEnvelope/gml:low/text()|gml:domainSet/gml:ReferenceableGrid/gml:limits/gml:GridEnvelope/gml:low/text()")),
+            high = WCS.Util.stringToIntArray(xPath(node, "gml:domainSet/gml:RectifiedGrid/gml:limits/gml:GridEnvelope/gml:high/text()|gml:domainSet/gml:ReferenceableGrid/gml:limits/gml:GridEnvelope/gml:high/text()"));
 
-        var low = WCS.Util.stringToIntArray(getText(domainSet, ns.gml, "low")),
-            high = WCS.Util.stringToIntArray(getText(domainSet, ns.gml, "high"));
-        
         var size = [];
         for (var i = 0; i < Math.min(low.length, high.length); ++i) {
             size.push(high[i] + 1 - low[i]);
         }
 
-        var pos = getText(domainSet, ns.gml, "pos")
-        if (pos) {
+        var pos = xPath(node, "gml:domainSet/gml:RectifiedGrid/gml:origin/gml:Point/gml:pos/text()");
+        if (pos !== "") {
             var origin = WCS.Util.stringToFloatArray(pos);
         }
-        var offsetVectors = map(getAll(domainSet, ns.gml, "offsetVector"), function(offsetVector) {
-            return WCS.Util.stringToFloatArray(getText(offsetVector));
+        var offsetVectors = map(xPathArray(node, "gml:domainSet/gml:RectifiedGrid/gml:offsetVector/text()"), function(offsetVector) {
+            return WCS.Util.stringToFloatArray(offsetVector);
         });
 
-        // simplified resolution interface. does not make sense for not axis 
+        // simplified resolution interface. does not make sense for not axis
         // aligned offset vectors.
         var resolution = [];
         for (var i = 0; i < offsetVectors.length; ++i) {
@@ -644,16 +673,16 @@ WCS.Core.Parse = (function() {
         }
 
         // get the grid, either rectified or referenceable
-        var grid = getFirst(node, ns.gml, "RectifiedGrid");
-        if (!grid) grid = getFirst(node, ns.gml, "ReferenceableGrid");
-        
+        var grid = xPath(node, "gml:domainSet/gml:RectifiedGrid");
+        if (!grid) grid = xPath(node, "gml:domainSet/gml:ReferenceableGrid");
+
         var obj = {
-            "coverageId": getText(node, ns.wcs, "CoverageId"),
-            "dimensions": parseInt(grid.getAttribute("dimension")),
+            "coverageId": xPath(node, "wcs:CoverageId/text()"),
+            "dimensions": parseInt(xPath(node, "gml:domainSet/gml:RectifiedGrid/@dimension|gml:domainSet/gml:ReferenceableGrid/@dimension")),
             "bounds": {
-                "projection": envelope.getAttribute("srsName"),
-                "lower": WCS.Util.stringToFloatArray(getText(envelope, ns.gml, "lowerCorner")),
-                "upper": WCS.Util.stringToFloatArray(getText(envelope, ns.gml, "upperCorner"))
+                "projection": xPath(node, "gml:boundedBy/gml:Envelope/@srsName"),
+                "lower": WCS.Util.stringToFloatArray(xPath(node, "gml:boundedBy/gml:Envelope/gml:lowerCorner/text()")),
+                "upper": WCS.Util.stringToFloatArray(xPath(node, "gml:boundedBy/gml:Envelope/gml:upperCorner/text()"))
             },
             "envelope": {
                 "low": low,
@@ -663,27 +692,25 @@ WCS.Core.Parse = (function() {
             "origin": origin,
             "offsetVectors": offsetVectors,
             "resolution": resolution,
-            "rangeType": map(getAll(node, ns.swe, "field"), function(field) {
+            "rangeType": map(xPathArray(node, "gmlcov:rangeType/swe:DataRecord/swe:field"), function(field) {
                 return {
                     "name": field.getAttribute("name"),
-                    "description": getText(field, ns.swe, "description"),
-                    "uom": getFirst(field, ns.swe, "uom").getAttribute("code"),
-                    "nilValues": map(getAll(field, ns.swe, "nilValue"), function(nilValue) {
+                    "description": xPath(field, "swe:Quantity/swe:description/text()"),
+                    "uom": xPath(field, "swe:Quantity/swe:uom/@code"),
+                    "nilValues": map(xPathArray(field, "swe:Quantity/swe:nilValues/swe:NilValues/swe:nilValue"), function(nilValue) {
                         return {
                             "value": parseInt(nilValue.textContent),
                             "reason": nilValue.getAttribute("reason")
                         }
                     }),
-                    "allowedValues": WCS.Util.stringToIntArray(getText(field, ns.swe, "interval")),
-                    "significantFigures": parseInt(getText(field, ns.swe, "significantFigures"))
+                    "allowedValues": WCS.Util.stringToFloatArray(xPath(field, "swe:Quantity/swe:constraint/swe:AllowedValues/swe:interval/text()")),
+                    "significantFigures": parseInt(xPath(field, "swe:Quantity/swe:constraint/swe:AllowedValues/swe:significantFigures/text()"))
                 };
             }),
-            "coverageSubtype": getText(node, ns.wcs, "CoverageSubtype"),
-            "supportedCRSs": getTextArray(node, ns.wcs, "supportedCRS"),
-            "nativeCRS": getText(node, ns.wcs, "nativeCRS"),
-            "supportedFormats": getTextArray(node, ns.wcs, "supportedFormat")
+            "coverageSubtype": xPath(node, "wcs:ServiceParameters/wcs:CoverageSubtype/text()"),
+            "nativeFormat": xPath(node, "wcs:ServiceParameters/wcs:nativeFormat/text()")
         };
-        
+
         return obj;
     };
 
@@ -697,7 +724,7 @@ WCS.Core.Parse = (function() {
     });
 
     /// public functions/objects
-    
+
     var publicSymbols = {
         "pushParseFunction": pushParseFunction,
         "pushParseFunctions": pushParseFunctions,
@@ -705,9 +732,9 @@ WCS.Core.Parse = (function() {
         "callParseFunctions": callParseFunctions,
         "options": options
     }
-    
+
     /// end public functions
 
     return publicSymbols;
-    
+
 }) ();
