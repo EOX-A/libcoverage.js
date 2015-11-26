@@ -99,6 +99,7 @@ WCS.EO.Parse = function() {
         gmlcov: "http://www.opengis.net/gmlcov/1.0",
         eop: "http://www.opengis.net/eop/2.0",
         wcseo: "http://www.opengis.net/wcs/wcseo/1.0",
+        wcseoold: "http://www.opengis.net/wcseo/1.0",  // support old definitions aswell
         om: "http://www.opengis.net/om/2.0"
     }
 
@@ -163,7 +164,7 @@ WCS.EO.Parse = function() {
     },
 
     parseDatasetSeriesDescriptions: function(node) {
-        var descs = map(xPathArray(node, "wcseo:DatasetSeriesDescription"), function(datasetSeriesDescription) {
+        var descs = map(xPathArray(node, "wcseo:DatasetSeriesDescription|wcseoold:DatasetSeriesDescription"), function(datasetSeriesDescription) {
             return WCS.Core.Parse.callParseFunctions("DatasetSeriesDescription", datasetSeriesDescription);
         });
 
@@ -177,9 +178,9 @@ WCS.EO.Parse = function() {
     parseExtendedCapabilities: function(node) {
         return {
             "contents": {
-                "datasetSeries": map(xPathArray(node, "wcs:Contents/wcs:Extension/wcseo:DatasetSeriesSummary"), function(sum) {
+                "datasetSeries": map(xPathArray(node, "wcs:Contents/wcs:Extension/wcseo:DatasetSeriesSummary|wcs:Contents/wcs:Extension/wcseoold:DatasetSeriesSummary"), function(sum) {
                     return {
-                        "datasetSeriesId": xPath(sum, "wcseo:DatasetSeriesId/text()"),
+                        "datasetSeriesId": xPath(sum, "wcseo:DatasetSeriesId/text()|wcseoold:DatasetSeriesId/text()"),
                         "timePeriod": [
                             new Date(xPath(sum, "gml:TimePeriod/gml:beginPosition/text()")),
                             new Date(xPath(sum, "gml:TimePeriod/gml:endPosition/text()"))
@@ -191,7 +192,7 @@ WCS.EO.Parse = function() {
     },
 
     parseExtendedCoverageDescription: function(node) {
-        var eoMetadata = xPath(node, "gmlcov:metadata/wcseo:EOMetadata");
+        var eoMetadata = xPath(node, "gmlcov:metadata/wcseo:EOMetadata|gmlcov:metadata/wcseoold:EOMetadata");
         if (eoMetadata) {
             var phenomenonTime = xPath(eoMetadata, "eop:EarthObservation/om:phenomenonTime");
             return {
