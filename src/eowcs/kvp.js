@@ -1,5 +1,5 @@
 /**
- * @module eowcs.kvp
+ * @module eowcs/kvp
  */
 
 'use strict';
@@ -7,35 +7,32 @@
 var utils = require("../utils");
 
 /**
- * @function describeEOCoverageSetURL
- *
  * Returns a 'DescribeEOCoverageSet' request URL with parameters encoded as KVP.
  *
- * @param url: the base URL of the service
- * @param eoid: the ID of the coverage set
- * @param options: an object containing any the following optional parameters
- *
- * @param options.bbox: an array of four values in the following order:
- *                      [minx, miny, maxx, maxy]
- * @param options.subsetX: the subset of the X axis as an array in the following form:
- *                         [minx, maxx]
- * @param options.subsetY: the subset of the Y axis as an array in the following form:
- *                         [minx, maxx]
- * @param options.subsetCRS: the CRS definition in which the spatial subsets are
- *                           expressed in
- * @param options.subsetTime: the subset on the time axis in the following form:
- *                            [beginTime, endTime]
- * @param options.containment: a string describing the containment method for all
- *                             subsets. One of "overlaps" and "contains".
- * @param options.count: an integer, limiting the maximum number of returned coverage
+ * @param url the base URL of the service
+ * @param eoid the ID of the coverage set
+ * @param options an object containing any the following optional parameters
+ * @param options.bbox an array of four values in the following order:
+ *                     [minx, miny, maxx, maxy]
+ * @param options.subsetX the subset of the X axis as an array in the following form:
+ *                        [minx, maxx]
+ * @param options.subsetY the subset of the Y axis as an array in the following form:
+ *                        [minx, maxx]
+ * @param options.subsetCRS the CRS definition in which the spatial subsets are
+ *                          expressed in
+ * @param options.subsetTime the subset on the time axis in the following form:
+ *                           [beginTime, endTime]
+ * @param options.containment a string describing the containment method for all
+ *                            subsets. One of "overlaps" and "contains".
+ * @param options.count an integer, limiting the maximum number of returned coverage
  *                       descriptions within the coverage set.
- * @param options.sections: an array of strings for sections to be included, each one of
+ * @param options.sections an array of strings for sections to be included, each one of
  *                          "CoverageDescriptions" and "DatasetSeriesDescriptions".
  *
- * @param extraParams: an object containing any extra (vendor specific)
- *                     parameters which will be appended to the query string
+ * @param extraParams an object containing any extra (vendor specific)
+ *                    parameters which will be appended to the query string
  *
- * @returns: the constructed request URL
+ * @returns the constructed request URL
  */
 
 function describeEOCoverageSetURL(url, eoid, options, extraParams) {

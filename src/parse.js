@@ -1,5 +1,5 @@
 /**
- * @module parse
+ * @module core/parse
  */
 
 'use strict';
@@ -24,9 +24,11 @@ if (typeof window.DOMParser != "undefined") {
 }
 
 /**
- * @private 
- * @global parseFunctions
- *
+ * @private
+ * @global
+ */
+
+/**
  * A hash-table associating the node name of common WCS objects with their
  * according parse function.
  */
@@ -35,7 +37,6 @@ var parseFunctions = {};
 
 /**
  * @private
- * namespace declarations
  */
 
 var ns = {
@@ -54,18 +55,16 @@ var xPath = utils.createXPath(ns);
 var xPathArray = utils.createXPathArray(ns);
 
 /**
- * @function pushParseFunction
- *
  * Registers a new node parsing function for a specified tagName. A function
  * can be registered to multiple tagNames.
  *
- * @param tagName: the tagName the function is registered to
+ * @param tagName the tagName the function is registered to
  *
- * @param parseFunction: the function to be executed. The function shall
- *                       receive the tag name and a wrapped DOM object
- *                       as parameters and shall return an object of all parsed
- *                       attributes. For extension parsing functions only
- *                       extensive properties shall be parsed.
+ * @param parseFunction the function to be executed. The function shall
+ *                      receive the tag name and a wrapped DOM object
+ *                      as parameters and shall return an object of all parsed
+ *                      attributes. For extension parsing functions only
+ *                      extensive properties shall be parsed.
  */
 
 function pushParseFunction(tagName, parseFunction) {
@@ -78,13 +77,11 @@ function pushParseFunction(tagName, parseFunction) {
 }
 
 /**
- * @function pushParseFunctions
- *
  * Convenience function to push multiple parsing functions at one. The same
  * rules as with `WCS.Core.pushParseFunction` apply here.
  *
- * @params: a hash-table with key-value pairs, where the key is the tag name
- *          and the value the parsing function.
+ * @param obj a hash-table with key-value pairs, where the key is the tag name
+ *            and the value the parsing function.
  */
 
 function pushParseFunctions(obj) {
@@ -94,16 +91,14 @@ function pushParseFunctions(obj) {
 }
 
 /**
- * @function callParseFunctions
- *
  * Calls all registered functions for a specified node name. A merged object
  * with all results of each function is returned.
  *
- * @param tagName: the tagName of the node to be parsed
+ * @param tagName the tagName of the node to be parsed
  *
- * @param node: the DOM object
+ * @param node the DOM object
  *
- * @return: the merged object of all parsing results
+ * @returns the merged object of all parsing results
  */
 
 function callParseFunctions(tagName, node, options) {
@@ -121,17 +116,15 @@ function callParseFunctions(tagName, node, options) {
 }
 
 /**
- * @function parse
- *
  * Parses a (EO-)WCS response to JavaScript objects. 
  *
- * @param xml: the XML string to be parsed
- * @param options: options for parsing
- * @param options.throwOnException: if true, an exception is thrown when an
- *                                  exception report is parsed
+ * @param xml the XML string to be parsed
+ * @param options options for parsing
+ * @param options.throwOnException if true, an exception is thrown when an
+ *                                 exception report is parsed
  *
- * @returns: depending on the response a JavaScript object with all parsed data
- *           or a collection thereof.
+ * @returns depending on the response a JavaScript object with all parsed data
+ *          or a collection thereof.
  */
 
 function parse(xml, options) {
@@ -147,13 +140,14 @@ function parse(xml, options) {
 
 
 /**
- * @function parseExceptionReport
- *
  * Parsing function for ows:ExceptionReport elements.
  *
- * @param node: the DOM object
+ * @param node the DOM object
+ * @param options
+ * @param options.throwOnException throw an exception when an exception report
+ *                                 is parsed
  *
- * @returns: the parsed object
+ * @returns the parsed object
  */
 
 function parseExceptionReport(node, options) {
@@ -173,13 +167,11 @@ function parseExceptionReport(node, options) {
 }
 
 /**
- * @function parseCapabilities
- *
  * Parsing function for wcs:Capabilities elements.
  *
- * @param node: the DOM object
+ * @param node the DOM object
  *
- * @returns: the parsed object
+ * @returns the parsed object
  */
 
 function parseCapabilities(node) {
@@ -242,13 +234,11 @@ function parseCapabilities(node) {
 }
 
 /**
- * @function parseCoverageDescriptions
- *
  * Parsing function for wcs:CoverageDescriptions elements.
  *
- * @param node: the DOM object
+ * @param node the DOM object
  *
- * @returns: the parsed object
+ * @returns the parsed object
  */
 
 function parseCoverageDescriptions(node) {
@@ -259,13 +249,11 @@ function parseCoverageDescriptions(node) {
 }
 
 /**
- * @function parseCoverageDescription
- *
  * Parsing function for wcs:CoverageDescription elements.
  *
- * @param node: the DOM object
+ * @param node the DOM object
  *
- * @returns: the parsed object
+ * @returns the parsed object
  */
 
 function parseCoverageDescription(node) {

@@ -1,17 +1,15 @@
 /**
- * @module utils
+ * @module core/utils
  */
 
 'use strict';
 
 /**
- * @function objectToKVP
- *
  * Convenience function to serialize an object to a KVP encoded string.
  *
- * @param obj: The object to serialize
+ * @param obj The object to serialize
  *
- * @returns: the constructed KVP string
+ * @returns the constructed KVP string
  */
 
 function objectToKVP(obj) {
@@ -23,15 +21,13 @@ function objectToKVP(obj) {
 }
 
 /**
- * @function stringToIntArray
- *
  * Utility function to split a string and parse an array of integers.
  *
- * @param string: the string to split and parse
- * @param separator: an (optional) separator, the string shall be split with.
+ * @param string the string to split and parse
+ * @param separator an (optional) separator, the string shall be split with.
  *                   Defaults to " ".
  *
- * @returns: an array of the parsed values
+ * @returns an array of the parsed values
  */
 
 function stringToIntArray(string, separator) {
@@ -42,15 +38,13 @@ function stringToIntArray(string, separator) {
 }
 
 /**
- * @function stringToFloatArray
- *
  * Utility function to split a string and parse an array of floats.
  *
- * @param string: the string to split and parse
- * @param separator: an (optional) separator, the string shall be split with.
+ * @param string the string to split and parse
+ * @param separator an (optional) separator, the string shall be split with.
  *                   Defaults to " ".
  *
- * @returns: an array of the parsed values
+ * @returns an array of the parsed values
  */
 
 function stringToFloatArray(string, separator) {
@@ -102,12 +96,10 @@ function map(array, iterator) {
 }
 
 /**
- * @function deepMerge
- *
  * Recursivly merges two hash-tables.
  *
- * @param target: the object the other one will be merged into
- * @param other: the object that will be merged into the target
+ * @param target the object the other one will be merged into
+ * @param other the object that will be merged into the target
  */
 
 function deepMerge(target, other) {
@@ -122,6 +114,13 @@ function deepMerge(target, other) {
     }
 }
 
+/**
+ * Create an xPath lookup function bound to the given namespaceMap.
+ *
+ * @param namespaceMap the mapping from prefix to namespace URL.
+ *
+ * @returns the xPath function
+ */
 
 function createXPath(namespaceMap) {
     var nsResolver = function(prefix) {
@@ -146,6 +145,14 @@ function createXPath(namespaceMap) {
     }
 }
 
+/**
+ * Create an xPath lookup function (that itself returns arrays of elements)
+ * bound to the given namespaceMap.
+ *
+ * @param namespaceMap the mapping from prefix to namespace URL.
+ *
+ * @returns the xPath function
+ */
 function createXPathArray(namespaceMap) {
     var nsResolver = function(prefix) {
       return namespaceMap[prefix] || null;

@@ -1,5 +1,5 @@
 /**
- * @module kvp
+ * @module core/kvp
  */
 
 'use strict';
@@ -7,21 +7,19 @@
 var utils = require("./utils");
 
 /**
- * @function getCapabilitiesURL
- *
  * Returns a 'GetCapabilities' request URL with parameters encoded as KVP.
  *
- * @param url: the base URL of the service
- * @param options: an object containing any the following optional parameters
- *      -updatesequence: a string identifier
- *      -sections: an array of strings for sections to be included, each one of
+ * @param url the base URL of the service
+ * @param options an object containing any the following optional parameters
+ * @param updatesequence a string identifier
+ * @param sections an array of strings for sections to be included, each one of
  *                 "ServiceIdentification", "ServiceProvider",
  *                 "OperationsMetadata" and "Contents".
  *
- * @param extraParams: an object containing any extra (vendor specific)
- *                     parameters which will be appended to the query string
+ * @param extraParams an object containing any extra (vendor specific)
+ *                    parameters which will be appended to the query string
  *
- * @returns: the constructed request URL
+ * @returns the constructed request URL
  */
 
 function getCapabilitiesURL(url, options, extraParams) {
@@ -46,16 +44,14 @@ function getCapabilitiesURL(url, options, extraParams) {
 }
 
 /**
- * @function describeCoverageURL
- *
  * Returns a 'DescribeCoverage' request URL with parameters encoded as KVP.
  *
- * @param url: the base URL of the service
- * @param coverageids: either a single coverage ID or an array thereof
- * @param extraParams: an object containing any extra (vendor specific)
- *      parameters which will be appended to the query string
+ * @param url the base URL of the service
+ * @param {Array|string} coverageids either a single coverage ID or an array thereof
+ * @param extraParams an object containing any extra (vendor specific)
+ *                    parameters which will be appended to the query string
  *
- * @returns: the constructed request URL
+ * @returns the constructed request URL
  */
 
 function describeCoverageURL(url, coverageids, extraParams) {
@@ -75,39 +71,37 @@ function describeCoverageURL(url, coverageids, extraParams) {
 }
 
 /**
- * @function getCoverageSetURL
- *
  * Returns a 'GetCoverage' request URL with parameters encoded as KVP.
  *
- * @param url: the base URL of the service
- * @param coverage: the ID of the coverage
- * @param options: an object containing any the following optional parameters
- *      -format: the desired format of the returned coverage
- *      -bbox: an array of four values in the following order:
- *             [minx, miny, maxx, maxy]
- *      -subsetX: the subset of the X axis as an array in the following form:
- *                [minx, maxx]
- *      -subsetY: the subset of the Y axis as an array in the following form:
- *                [minx, maxx]
- *      -subsetCRS: the CRS definition in which the spatial subsets are
- *                  expressed in
- *      -rangesubset: an array of selected band names or indices
- *      -size: an array of two size values limiting the size for both axes
- *      -sizeX: the size of the X axis
- *      -sizeY: the size of the Y axis
- *      -resolution: an array of two resolution values specifying the
- *                   resolution for both axes
- *      -resolutionX: the resolution of the X axis
- *      -resolutionY: the resolution of the Y axis
- *      -interpolation: the interpolation method as advertised by the service
- *      -outputCRS: the CRS definition in which the coverage shall be returned
- *      -multipart: if set to true, the coverage will be returned with
- *                  according XML metadata
+ * @param url the base URL of the service
+ * @param coverage the ID of the coverage
+ * @param options an object containing any the following optional parameters
+ * @param options.format the desired format of the returned coverage
+ * @param options.bbox an array of four values in the following order:
+ *                     [minx, miny, maxx, maxy]
+ * @param options.subsetX the subset of the X axis as an array in the following form:
+ *                         [minx, maxx]
+ * @param options.subsetY the subset of the Y axis as an array in the following form:
+ *                         [minx, maxx]
+ * @param options.subsetCRS the CRS definition in which the spatial subsets are
+ *                          expressed in
+ * @param options.rangesubset an array of selected band names or indices
+ * @param options.size an array of two size values limiting the size for both axes
+ * @param options.sizeX the size of the X axis
+ * @param options.sizeY the size of the Y axis
+ * @param options.resolution an array of two resolution values specifying the
+ *                           resolution for both axes
+ * @param options.resolutionX the resolution of the X axis
+ * @param options.resolutionY the resolution of the Y axis
+ * @param options.interpolation the interpolation method as advertised by the service
+ * @param options.outputCRS the CRS definition in which the coverage shall be returned
+ * @param options.multipart if set to true, the coverage will be returned with
+ *                          according XML metadata
  *
- * @param extraParams: an object containing any extra (vendor specific)
- *                     parameters which will be appended to the query string
+ * @param extraParams an object containing any extra (vendor specific)
+ *                    parameters which will be appended to the query string
  *
- * @returns: the constructed request URL
+ * @returns the constructed request URL
  */
 
 function getCoverageURL(url, coverageid, options, extraParams) {

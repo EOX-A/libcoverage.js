@@ -1,5 +1,5 @@
 /**
- * @module eowcs.parse
+ * @module eowcs/parse
  */
 
 'use strict';

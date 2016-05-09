@@ -1,7 +1,9 @@
 /**
- * @module integrations.backbone
- *
- * Main Backbone integration for libcoverage.js. Provides means to access WCS
+ * @module integrations/backbone
+ */
+
+
+/* Main Backbone integration for libcoverage.js. Provides means to access WCS
  * services in a MVC-style manner.
  *
  * Limitations:
