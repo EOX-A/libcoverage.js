@@ -1,6 +1,6 @@
 {
   "name": "libcoverage",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A WCS (Web Coverage Service) client library for JavaScript.",
   "homepage": "https://github.com/EOX-A/libcoverage.js",
   "author": {
