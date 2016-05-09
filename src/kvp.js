@@ -109,7 +109,7 @@ function getCoverageURL(url, coverageid, options, extraParams) {
         throw new Error("Parameters 'url' and 'coverageid' are mandatory.");
     }
     options = options || {};
-    subsetCRS = options.subsetCRS || "http://www.opengis.net/def/crs/EPSG/0/4326";
+    var subsetCRS = options.subsetCRS || "http://www.opengis.net/def/crs/EPSG/0/4326";
     if (url.charAt(url.length-1) !== "?")
         url += "?";
     var params = ["service=wcs", "version=2.0.0", "request=getcoverage",

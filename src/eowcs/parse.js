@@ -5,7 +5,7 @@
 'use strict';
 
 var utils = require("../utils");
-var coreParse = requrie("../parse");
+var coreParse = require("../parse");
 
 
 var ns = {

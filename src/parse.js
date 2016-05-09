@@ -157,7 +157,7 @@ function parseExceptionReport(node, options) {
         "locator": exception.getAttribute("locator"),
         "text": xPath(exception, "ows:ExceptionText/text()")
     };
-    if (options.throwOnException) {
+    if (options && options.throwOnException) {
         var e = new Exception(parsed.text);
         e.locator = parsed.locator;
         e.code = parsed.code;
@@ -215,7 +215,7 @@ function parseCapabilities(node) {
             "crssSupported": xPathArray(node, "wcs:ServiceMetadata/wcs:Extension/crs:CrsMetadata/crs:crsSupported/text()"),
             "interpolationsSupported": xPathArray(node, "wcs:ServiceMetadata/wcs:Extension/int:InterpolationMetadata/int:InterpolationSupported/text()")
         },
-        "operations": map(xPathArray(node, "ows:OperationsMetadata/ows:Operation"), function(op) {
+        "operations": utils.map(xPathArray(node, "ows:OperationsMetadata/ows:Operation"), function(op) {
             return {
                 "name": op.getAttribute("name"),
                 "getUrl": xPath(op, "ows:DCP/ows:HTTP/ows:Get/@xlink:href"),
@@ -223,7 +223,7 @@ function parseCapabilities(node) {
             };
         }),
         "contents": {
-            "coverages": map(xPathArray(node, "wcs:Contents/wcs:CoverageSummary"), function(sum) {
+            "coverages": utils.map(xPathArray(node, "wcs:Contents/wcs:CoverageSummary"), function(sum) {
                 return {
                     "coverageId": xPath(sum, "wcs:CoverageId/text()"),
                     "coverageSubtype": xPath(sum, "wcs:CoverageSubtype/text()")
@@ -242,7 +242,7 @@ function parseCapabilities(node) {
  */
 
 function parseCoverageDescriptions(node) {
-    var descs = map(xPathArray(node, "wcs:CoverageDescription"), function(desc) {
+    var descs = utils.map(xPathArray(node, "wcs:CoverageDescription"), function(desc) {
         return callParseFunctions(desc.localName, desc);
     });
     return {"coverageDescriptions": descs};
@@ -269,7 +269,7 @@ function parseCoverageDescription(node) {
     if (pos !== "") {
         var origin = utils.stringToFloatArray(pos);
     }
-    var offsetVectors = map(xPathArray(node, "gml:domainSet/gml:RectifiedGrid/gml:offsetVector/text()"), function(offsetVector) {
+    var offsetVectors = utils.map(xPathArray(node, "gml:domainSet/gml:RectifiedGrid/gml:offsetVector/text()"), function(offsetVector) {
         return utils.stringToFloatArray(offsetVector);
     });
 

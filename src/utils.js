@@ -32,7 +32,7 @@ function objectToKVP(obj) {
 
 function stringToIntArray(string, separator) {
     separator = separator || " ";
-    return WCS.Util.map(string.split(separator), function(val) {
+    return map(string.split(separator), function(val) {
         return parseInt(val);
     });
 }
@@ -49,7 +49,7 @@ function stringToIntArray(string, separator) {
 
 function stringToFloatArray(string, separator) {
     separator = separator || " ";
-    return WCS.Util.map(string.split(separator), function(val) {
+    return map(string.split(separator), function(val) {
         return parseFloat(val);
     });
 }
@@ -63,7 +63,7 @@ function getFirst(node, ns, tagName) {
 }
 
 function getText(node, ns, tagName, defaultValue) {
-    var first = WCS.Util.getFirst(node, ns, tagName);
+    var first = getFirst(node, ns, tagName);
     if (first)
         return first.textContent;
     else
@@ -80,7 +80,7 @@ function getAll(node, ns, tagName) {
 
 function getTextArray(node, ns, tagName) {
     var texts = [];
-    var nodes = WCS.Util.getAll(node, ns, tagName);
+    var nodes = getAll(node, ns, tagName);
     for (var i = 0; i < nodes.length; ++i) {
         texts.push(nodes[i].textContent);
     }
@@ -108,7 +108,7 @@ function deepMerge(target, other) {
         if (target.hasOwnProperty(key)
             && typeof target[key] == "object"
             && typeof other[key] == "object") {
-            WCS.Util.deepMerge(target[key], other[key]);
+            deepMerge(target[key], other[key]);
         }
         else target[key] = other[key];
     }
@@ -134,7 +134,7 @@ function createXPath(namespaceMap) {
             return doc.evaluate(xpath, node, nsResolver, XPathResult.STRING_TYPE, null).stringValue;
         }
         else {
-            result = doc.evaluate(xpath, node, nsResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            var result = doc.evaluate(xpath, node, nsResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
             if (result.snapshotLength == 0) {
                return null;
             }
