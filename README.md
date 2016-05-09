@@ -68,17 +68,17 @@ are deep-merged together, so the extending parse functions should only parse
 information not yet included in the main parsing result.
 
 To extend the core parsing capabilities with some specific functionality, one
-first has to design the parsing function which always takes the jQuery wrapped
-XML node as parameter:
+first has to design the parsing function which always takes the XML DOM node as
+parameter:
 
 ```javascript
-var parseExtendedCapabilities = function($node) {
+var parseExtendedCapabilities = function(node) {
     return {
         // parse data and insert it here
-        specialData: $node.find("wcs|SpecialData").text()
+        specialData: someFinder(node, "SomePath").text
     }
 }
-``
+```
 
 Then, the function has to be registered for the node name (without the
 namespace prefix):
