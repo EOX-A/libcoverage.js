@@ -1,5 +1,5 @@
 {
-  "name": "libcoverage.js",
+  "name": "libcoverage",
   "version": "0.1.7",
   "description": "A WCS (Web Coverage Service) client library for JavaScript.",
   "homepage": "https://github.com/EOX-A/libcoverage.js",
@@ -14,6 +14,7 @@
   "bugs": {
     "url": "https://github.com/EOX-A/libcoverage.js/issues"
   },
+  "license": "MIT",
   "licenses": [
     {
       "type": "MIT",
@@ -22,9 +23,11 @@
   ],
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-browserify": "^5.0.0",
     "grunt-bump": "~0.0.11",
     "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-compress": "~0.5.2"
+    "grunt-contrib-compress": "~0.5.2",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-jsdoc": "^2.0.0"
   }
 }

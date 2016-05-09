@@ -4,6 +4,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-bump');
+    grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-jsdoc');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -15,8 +17,7 @@ module.exports = function(grunt) {
             },
             compile: {
                 files: {
-                    'build/libcoverage.min.js': ['libcoverage.wcs.js', 'libcoverage.eowcs.js'],
-                    'build/libcoverage.backbone.min.js': ['integrations/libcoverage.backbone.js']
+                    'build/libcoverage.min.js': ['build/libcoverage.js']
                 }
             }
         },
@@ -38,12 +39,29 @@ module.exports = function(grunt) {
                 },
                 files: [
                     { expand: true, cwd: 'build', src: ['*.min.js'], dest: '<%= pkg.name %>' },
-                    { expand: true, src: ['README.rst', 'LICENSE'], dest: '<%= pkg.name %>' },
+                    { expand: true, src: ['README.md', 'LICENSE'], dest: '<%= pkg.name %>' },
                 ]
+            }
+        },
+        browserify: {
+            dist: {
+                files: {
+                    'build/libcoverage.js': ['src/browserify.js']
+                },
+                options: {
+                }
+            }
+        },
+        jsdoc: {
+            dist: {
+                src: ['src/**/*.js', 'README.md'],
+                options: {
+                    destination: 'docs'
+                }
             }
         }
     });
 
-    grunt.registerTask('default', ['clean:build', 'uglify'])
-    grunt.registerTask('release', ['clean', 'bump', 'uglify', 'compress:release']);
+    grunt.registerTask('default', ['clean:build', 'browserify', 'uglify'])
+    grunt.registerTask('release', ['clean', 'bump', 'browserify', 'uglify', 'compress:release']);
 }
