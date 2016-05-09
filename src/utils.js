@@ -54,39 +54,6 @@ function stringToFloatArray(string, separator) {
     });
 }
 
-function getFirst(node, ns, tagName) {
-    if (!tagName) return node;
-    if (ns)
-        return node.getElementsByTagNameNS(ns, tagName)[0];
-    else
-        return node.getElementsByTagName(tagName)[0];
-}
-
-function getText(node, ns, tagName, defaultValue) {
-    var first = getFirst(node, ns, tagName);
-    if (first)
-        return first.textContent;
-    else
-        return defaultValue
-}
-
-function getAll(node, ns, tagName) {
-    if (!tagName) return [node];
-    if (ns)
-        return node.getElementsByTagNameNS(ns, tagName);
-    else
-        return node.getElementsByTagName(tagName);
-}
-
-function getTextArray(node, ns, tagName) {
-    var texts = [];
-    var nodes = getAll(node, ns, tagName);
-    for (var i = 0; i < nodes.length; ++i) {
-        texts.push(nodes[i].textContent);
-    }
-    return texts;
-}
-
 function map(array, iterator) {
     var result = [];
     for (var i = 0; i < array.length; ++i) {
@@ -179,11 +146,7 @@ function createXPathArray(namespaceMap) {
 module.exports = {
     objectToKVP: objectToKVP,
     stringToIntArray: stringToIntArray,
-    stringToFloatArray: stringToFloatArray, 
-    getFirst: getFirst,
-    getText: getText,
-    getAll: getAll,
-    getTextArray: getTextArray,
+    stringToFloatArray: stringToFloatArray,
     map: map,
     deepMerge: deepMerge,
     createXPath: createXPath,
