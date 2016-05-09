@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>libcoverage.js</h1><p>Libcoverage.js is an extensible client library for the
+<a href="http://www.opengeospatial.org/">Open Geospatial Constortium (OGC)</a>
+<a href="http://www.opengeospatial.org/standards/wcs">Web Coverage Service 2.0+ interface standard</a>
+using a MIT style license.</p>
+<p>It features means to create requests from parameters and parse the results
+returned from a WCS service.</p>
+<p>Dependencies:</p>
+<ul>
+<li>libcoverage.js does not have any further dependency but relies on the
+function <code>getElementsByTagNameNS</code>, and thus needs a browser that correctly
+supports it.</li>
+</ul>
+<p>Drawbacks:</p>
+<ul>
+<li><p>Libcoverage.js does <em>not</em> send and receive requests of any kind. This was
+designed with the intention to maximize compatibility with other DOM/ajax
+libraries.</p>
+</li>
+<li><p>Responses can only be parsed in a general way with the
+<code>WCS.Core.Parse.parse</code> function.</p>
+</li>
+</ul>
+<p>Libcoverage.js uses namespaces to not clutter the global one.</p>
+<h2>Request Generation</h2><p>Lying in the <code>WCS.*.KVP</code> directories the functions ending with <code>...URL</code>
+are creating request URLs for the available request methods. For the WCS
+2.0 core, these are:</p>
+<ul>
+<li><p>GetCapabilities (<code>WCS.Core.getCapabilitiesURL</code>): This request gathers
+general information about the consumed service, e.g: allowed requests,
+available coverages and various service metadata.</p>
+</li>
+<li><p>DescribeCoverage (<code>WCS.Core.describeCoverageURL</code>): This request collects
+detailed information about one or more coverages.</p>
+</li>
+<li><p>GetCoverage (<code>WCS.Core.getCoverageURL</code>): This request downloads a specific
+coverage or subsets thereof and applies certain pre-processing parameters
+(e.g: reprojection or band-selection).</p>
+</li>
+</ul>
+<p>The generated requests can be sent to the server via the transmission method of
+any flavor but typically via ajax.</p>
+<h2>Response Parsing</h2><p>To parse the responses returned by the service use the <code>WCS.Core.Parse.parse</code>
+function. It tries to find the correct parsing functions for the given element
+name and returns a merged object, containing the result of all registered
+parsing functions. This approach was taken for the sake of extensibility,
+please refer to the chapter <a href="#extending-libcoverage.js">Extending libcoverage.js</a>
+for the exact means.</p>
+<h2>Extending libcoverage.js</h2><p>Since WCS 2.0 uses a <a href="https://portal.opengeospatial.org/files/?artifact_id=46442">Core/Extension approach</a>
+it is vital for a client library to be extensible to easily adapt new extensions.
+This is mostly important for parsing service responses.</p>
+<p>Libcoverage.js allows the registration of new parsing functions for the node
+name of the elements it shall parse. As explained in
+<a href="#response-parsing">Response Parsing</a> the results of all registered functions
+are deep-merged together, so the extending parse functions should only parse
+information not yet included in the main parsing result.</p>
+<p>To extend the core parsing capabilities with some specific functionality, one
+first has to design the parsing function which always takes the XML DOM node as
+parameter:</p>
+<pre class="prettyprint source lang-javascript"><code>var parseExtendedCapabilities = function(node) {
+    return {
+        // parse data and insert it here
+        specialData: someFinder(node, &quot;SomePath&quot;).text
+    }
+}</code></pre><p>Then, the function has to be registered for the node name (without the
+namespace prefix):</p>
+<pre class="prettyprint source lang-javascript"><code>WCS.Core.Parse.pushParseFunction(&quot;Capabilities&quot;, parseExtendedCapabilities);</code></pre><h3>Example extension: EO-WCS</h3><p>Libcoverage.js ships with a client extension for
+<a href="https://portal.opengeospatial.org/files/?artifact_id=45404">Earth Observation (EO-WCS)</a>.
+It provides a new function for generating requests
+(<code>WCS.EO.KVP.describeEOCoverageSetURL</code>) and new element parsing functions for
+<code>Capabilities</code>, <code>CoverageDescriptions</code> and <code>EOCoverageSetDescriptions</code> 
+which are registered once the module is loaded.</p>
+<p>The extended <code>Capabilities</code> parse function extends the parsed object with
+additional information about advertised dataset series. The
+<code>CoverageDescriptions</code> objects, on the other hand, are extended by the time
+interval and the footprint.</p>
+<h2>Integrations</h2><p>Currently there is only one integration, namely for the MVC framework
+<a href="http://backbonejs.org/">Backbone</a>. The integration provides the
+models <code>Service</code> and <code>Coverage</code> and the collection <code>CoverageSet</code>. If the
+EO-WCS extension for libcoverage.js is also available, then the EOCoverageSet
+is included aswell. The models integrate seamlessly within Backbone and can be
+used alongside other models and object synchronization.</p>
+<p>Unfortunately, as with the current status of
+<a href="http://portal.opengeospatial.org/files/?artifact_id=17909">Web Coverage Service - Transactional (WCS-T)</a>
+it is not possible to integrate creation or modification of coverages within
+backbone and thus all related function calls will fail. This may change once the
+transactional interface extension for WCS 2.0 is specified.</p>
+<h2>References</h2><ul>
+<li><a href="https://eoxserver.readthedocs.io/en/stable/users/webclient.html">EOxServer Webclient</a></li>
+</ul></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-core_kvp.html">core/kvp</a></li><li><a href="module-core_parse.html">core/parse</a></li><li><a href="module-core_utils.html">core/utils</a></li><li><a href="module-eowcs_kvp.html">eowcs/kvp</a></li><li><a href="module-eowcs_parse.html">eowcs/parse</a></li><li><a href="module-integrations_backbone.html">integrations/backbone</a></li></ul><h3>Classes</h3><ul><li><a href="module-integrations_backbone-XmlCollection.html">XmlCollection</a></li><li><a href="module-integrations_backbone-XmlModel.html">XmlModel</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon May 09 2016 14:34:02 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

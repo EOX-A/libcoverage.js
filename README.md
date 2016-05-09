@@ -1,10 +1,9 @@
-libcoverage.js
-==============
+# libcoverage.js
 
-Libcoverage.js is an extensible client library for the `Open Geospatial
-Constortium (OGC) <http://www.opengeospatial.org/>`_ `Web Coverage Service
-2.0+ interface standard <http://www.opengeospatial.org/standards/wcs>`_ using
-a MIT style license.
+Libcoverage.js is an extensible client library for the
+[Open Geospatial Constortium (OGC)](http://www.opengeospatial.org/)
+[Web Coverage Service 2.0+ interface standard](http://www.opengeospatial.org/standards/wcs)
+using a MIT style license.
 
 It features means to create requests from parameters and parse the results
 returned from a WCS service.
@@ -27,8 +26,7 @@ Drawbacks:
 
 Libcoverage.js uses namespaces to not clutter the global one.
 
-Request Generation
-------------------
+## Request Generation
 
 Lying in the ``WCS.*.KVP`` directories the functions ending with ``...URL``
 are creating request URLs for the available request methods. For the WCS
@@ -48,81 +46,77 @@ are creating request URLs for the available request methods. For the WCS
 The generated requests can be sent to the server via the transmission method of
 any flavor but typically via ajax.
 
-Response Parsing
-----------------
+## Response Parsing
 
 To parse the responses returned by the service use the ``WCS.Core.Parse.parse``
 function. It tries to find the correct parsing functions for the given element
 name and returns a merged object, containing the result of all registered
 parsing functions. This approach was taken for the sake of extensibility,
-please refer to the chapter `Extending libcoverage.js`_ for the exact means.
+please refer to the chapter [Extending libcoverage.js](#extending-libcoverage.js)
+for the exact means.
 
-Extending libcoverage.js
-------------------------
+## Extending libcoverage.js
 
-Since WCS 2.0 uses a `Core/Extension approach
-<https://portal.opengeospatial.org/files/?artifact_id=46442>`_ it is vital for
-a client library to be extensible to easily adapt new extensions. This is
-mostly important for parsing service responses.
+Since WCS 2.0 uses a [Core/Extension approach](https://portal.opengeospatial.org/files/?artifact_id=46442)
+it is vital for a client library to be extensible to easily adapt new extensions.
+This is mostly important for parsing service responses.
 
 Libcoverage.js allows the registration of new parsing functions for the node
-name of the elements it shall parse. As explained in `Response Parsing`_ the
-results of all registered functions are deep-merged together, so the extending
-parse functions should only parse information not yet included in the main
-parsing result.
+name of the elements it shall parse. As explained in
+[Response Parsing](#response-parsing) the results of all registered functions
+are deep-merged together, so the extending parse functions should only parse
+information not yet included in the main parsing result.
 
 To extend the core parsing capabilities with some specific functionality, one
-first has to design the parsing function which always takes the jQuery wrapped
-XML node as parameter:
-::
+first has to design the parsing function which always takes the XML DOM node as
+parameter:
 
-    var parseExtendedCapabilities = function($node) {
-        return {
-            // parse data and insert it here
-            specialData: $node.find("wcs|SpecialData").text()
-        }
+```javascript
+var parseExtendedCapabilities = function(node) {
+    return {
+        // parse data and insert it here
+        specialData: someFinder(node, "SomePath").text
     }
+}
+```
 
 Then, the function has to be registered for the node name (without the
 namespace prefix):
-::
 
-    WCS.Core.Parse.pushParseFunction("Capabilities", parseExtendedCapabilities);
+```javascript
+WCS.Core.Parse.pushParseFunction("Capabilities", parseExtendedCapabilities);
+```
 
 
-Example extension: EO-WCS
-`````````````````````````
+### Example extension: EO-WCS
 
-Libcoverage.js ships with a client extension for `Earth Observation (EO-WCS)
-<https://portal.opengeospatial.org/files/?artifact_id=45404>`_. It provides a
-new function for generating requests (``WCS.EO.KVP.describeEOCoverageSetURL``)
-and new element parsing functions for ``Capabilities``, ``CoverageDescriptions``
-and ``EOCoverageSetDescriptions`` which are registered once the module is
-loaded.
+Libcoverage.js ships with a client extension for
+[Earth Observation (EO-WCS)](https://portal.opengeospatial.org/files/?artifact_id=45404).
+It provides a new function for generating requests
+(``WCS.EO.KVP.describeEOCoverageSetURL``) and new element parsing functions for
+``Capabilities``, ``CoverageDescriptions`` and ``EOCoverageSetDescriptions`` 
+which are registered once the module is loaded.
 
 The extended ``Capabilities`` parse function extends the parsed object with
 additional information about advertised dataset series. The
 ``CoverageDescriptions`` objects, on the other hand, are extended by the time
 interval and the footprint.
 
-Integrations
-------------
+## Integrations
 
-Currently there is only one integration, namely for the MVC framework `Backbone
-<http://documentcloud.github.com/backbone/>`_. The integration provides the
+Currently there is only one integration, namely for the MVC framework
+[Backbone](http://backbonejs.org/). The integration provides the
 models ``Service`` and ``Coverage`` and the collection ``CoverageSet``. If the
 EO-WCS extension for libcoverage.js is also available, then the EOCoverageSet
 is included aswell. The models integrate seamlessly within Backbone and can be
 used alongside other models and object synchronization.
 
-Unfortunately, as with the current status of `Web Coverage Service -
-Transactional (WCS-T)
-<http://portal.opengeospatial.org/files/?artifact_id=17909>`_ it is not
-possible to integrate creation or modification of coverages within backbone and
-thus all related function calls will fail. This may change once the
+Unfortunately, as with the current status of
+[Web Coverage Service - Transactional (WCS-T)](http://portal.opengeospatial.org/files/?artifact_id=17909)
+it is not possible to integrate creation or modification of coverages within
+backbone and thus all related function calls will fail. This may change once the
 transactional interface extension for WCS 2.0 is specified.
 
-References
-----------
+## References
 
-- `EOxServer Webclient <http://eoxserver.org/doc/en/users/webclient.html>`_
+- [EOxServer Webclient](https://eoxserver.readthedocs.io/en/stable/users/webclient.html)
