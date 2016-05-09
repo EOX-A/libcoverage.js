@@ -30,7 +30,8 @@ module.exports = function(grunt) {
         },
         clean: {
             build: ['build/*'],
-            release: ['release/*']
+            release: ['release/*'],
+            docs: ['docs/*'],
         },
         compress: {
             release: {
@@ -64,4 +65,5 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['clean:build', 'browserify', 'uglify'])
     grunt.registerTask('release', ['clean', 'bump', 'browserify', 'uglify', 'compress:release']);
+    grunt.registerTask('docs', ['clean:docs', 'jsdoc'])
 }
