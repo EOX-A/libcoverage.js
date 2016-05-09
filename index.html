@@ -49,55 +49,58 @@
 using a MIT style license.</p>
 <p>It features means to create requests from parameters and parse the results
 returned from a WCS service.</p>
-<p>Dependencies:</p>
+<h2>Installation</h2><p>You can use libcoverage.js either via npm:</p>
+<pre class="prettyprint source lang-bash"><code>npm install libcoverage</code></pre><p>Or as a pre-bundled package:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;path/to/libcoverage.min.js&quot;>&lt;/script></code></pre><h2>Usage</h2><p><strong>Loading the modules</strong> (When not using the pre-bundled Version)</p>
+<pre class="prettyprint source lang-javascript"><code>var parse = require(&quot;libcoverage/src/parse&quot;);
+var kvp = require(&quot;libcoverage/src/kvp&quot;);
+var eoParse = require(&quot;libcoverage/src/eowcs/parse&quot;);
+var eoKvp = require(&quot;libcoverage/src/eowcs/parse&quot;);</code></pre><p><strong>Installing EO-WCS parsing extensions</strong></p>
+<pre class="prettyprint source lang-javascript"><code>parse.pushParseFunctions(eoPparse.parseFunctions);</code></pre><p><strong>Creating a GetCapabilities KVP request</strong></p>
+<pre class="prettyprint source lang-javascript"><code>var url = kvp.getCapabilitiesURL(baseUrl, {
+  updatesequence: &quot;someupdatesequence&quot;,
+  sections: [&quot;ServiceIdentification&quot;, &quot;Contents&quot;]
+});</code></pre><p><strong>Creating a DescribeCoverage KVP request</strong></p>
+<pre class="prettyprint source lang-javascript"><code>var url = kvp.describeCoverageURL(baseUrl, [
+  &quot;coverageA&quot;, &quot;coverageB&quot;
+]);</code></pre><p><strong>Creating a GetCoverage KVP request</strong></p>
+<pre class="prettyprint source lang-javascript"><code>var url = kvp.getCoverageURL(baseUrl, &quot;coverageId&quot;, {
+  format: &quot;image/tiff&quot;,
+  subsetX: [3.15, 3.25],
+  subsetY: [22.28, 23.00],
+  size: [100, 700],
+  interpolation: &quot;nearest&quot;
+});</code></pre><p><strong>Full GetCapabilities round-trip</strong></p>
+<pre class="prettyprint source lang-javascript"><code>var xhr = new XMLHttpRequest();
+xhr.open('GET', kvp.getCapabilitiesURL(baseUrl), true);
+xhr.onload = function(e) {
+  var capabilities = parse.parse(this.response);
+  console.log(capabilities);
+}
+xhr.send();</code></pre><p>For compatibility reasons, the pre-bundled version of libcoverage.js exports a
+<code>WCS</code> object object in the global scope (the <code>window</code>) with the following
+sub-elements, mapping to the respective modules:</p>
 <ul>
-<li>libcoverage.js does not have any further dependency but relies on the
-function <code>getElementsByTagNameNS</code>, and thus needs a browser that correctly
-supports it.</li>
+<li><code>WCS.Util</code> -&gt; <code>utils.js</code></li>
+<li><code>WCS.Core.Parse</code> -&gt; <code>parse.js</code></li>
+<li><code>WCS.Core.KVP</code> -&gt; <code>kvp.js</code></li>
+<li><code>WCS.EO.Parse</code> -&gt; <code>eowcs/parse.js</code></li>
+<li><code>WCS.EO.KVP</code> -&gt; <code>eowcs/kvp.js</code></li>
 </ul>
-<p>Drawbacks:</p>
-<ul>
-<li><p>Libcoverage.js does <em>not</em> send and receive requests of any kind. This was
-designed with the intention to maximize compatibility with other DOM/ajax
-libraries.</p>
-</li>
-<li><p>Responses can only be parsed in a general way with the
-<code>WCS.Core.Parse.parse</code> function.</p>
-</li>
-</ul>
-<p>Libcoverage.js uses namespaces to not clutter the global one.</p>
-<h2>Request Generation</h2><p>Lying in the <code>WCS.*.KVP</code> directories the functions ending with <code>...URL</code>
-are creating request URLs for the available request methods. For the WCS
-2.0 core, these are:</p>
-<ul>
-<li><p>GetCapabilities (<code>WCS.Core.getCapabilitiesURL</code>): This request gathers
-general information about the consumed service, e.g: allowed requests,
-available coverages and various service metadata.</p>
-</li>
-<li><p>DescribeCoverage (<code>WCS.Core.describeCoverageURL</code>): This request collects
-detailed information about one or more coverages.</p>
-</li>
-<li><p>GetCoverage (<code>WCS.Core.getCoverageURL</code>): This request downloads a specific
-coverage or subsets thereof and applies certain pre-processing parameters
-(e.g: reprojection or band-selection).</p>
-</li>
-</ul>
-<p>The generated requests can be sent to the server via the transmission method of
-any flavor but typically via ajax.</p>
-<h2>Response Parsing</h2><p>To parse the responses returned by the service use the <code>WCS.Core.Parse.parse</code>
-function. It tries to find the correct parsing functions for the given element
-name and returns a merged object, containing the result of all registered
-parsing functions. This approach was taken for the sake of extensibility,
-please refer to the chapter <a href="#extending-libcoverage.js">Extending libcoverage.js</a>
-for the exact means.</p>
+<p>To get a complete picture of all available functions and parameters, please refer
+to the <a href="http://eox-a.github.io/libcoverage.js/">API docs</a>.</p>
+<blockquote>
+<p><em>Note</em>: libcoverage.js does not have any further dependency but relies on the
+<a href="https://developer.mozilla.org/en/docs/Web/API/Document/evaluate">XPath API</a>,
+and thus needs a browser that correctly supports it.</p>
+</blockquote>
 <h2>Extending libcoverage.js</h2><p>Since WCS 2.0 uses a <a href="https://portal.opengeospatial.org/files/?artifact_id=46442">Core/Extension approach</a>
 it is vital for a client library to be extensible to easily adapt new extensions.
 This is mostly important for parsing service responses.</p>
 <p>Libcoverage.js allows the registration of new parsing functions for the node
-name of the elements it shall parse. As explained in
-<a href="#response-parsing">Response Parsing</a> the results of all registered functions
-are deep-merged together, so the extending parse functions should only parse
-information not yet included in the main parsing result.</p>
+name of the elements it shall parse. The results of all registered functions
+for the same tag are deep-merged together, so the extending parse functions
+should only parse information not yet included in the main parsing result.</p>
 <p>To extend the core parsing capabilities with some specific functionality, one
 first has to design the parsing function which always takes the XML DOM node as
 parameter:</p>
@@ -148,7 +151,7 @@ transactional interface extension for WCS 2.0 is specified.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon May 09 2016 14:34:02 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon May 09 2016 15:38:57 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
