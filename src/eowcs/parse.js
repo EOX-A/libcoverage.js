@@ -69,7 +69,7 @@ function parseExtendedCapabilities(node) {
 }
 
 function parseExtendedCoverageDescription(node) {
-    var eoMetadata = xPath(node, "gmlcov:metadata/wcseo:EOMetadata|gmlcov:metadata/gmlcov:Extension/wcseoold:EOMetadata|gmlcov:metadata/wcseoold:EOMetadata");
+    var eoMetadata = xPath(node, "gmlcov:metadata/gmlcov:Extension/wcseo:EOMetadata|gmlcov:metadata/wcseo:EOMetadata|gmlcov:metadata/gmlcov:Extension/wcseoold:EOMetadata|gmlcov:metadata/wcseoold:EOMetadata");
     if (eoMetadata) {
         var phenomenonTime = xPath(eoMetadata, "eop:EarthObservation/om:phenomenonTime");
         return {
