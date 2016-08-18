@@ -35,6 +35,8 @@ function parseEOCoverageSetDescription(node) {
     ) : [];
 
     return {
+        "numberMatched": node.getAttribute("numberMatched"),
+        "numberReturned": node.getAttribute("numberReturned"),
         "coverageDescriptions": cdescs.coverageDescriptions,
         "datasetSeriesDescriptions": dssdescs.datasetSeriesDescriptions
     };
